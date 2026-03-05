@@ -1,0 +1,15 @@
+{$HOMEPAGE_DOMAIN:localhost} {
+  tls {$CADDY_TLS_MODE:internal}
+  root * /srv/homepage
+  file_server
+}
+
+{$GITEA_DOMAIN:gitea.localhost} {
+  tls {$CADDY_TLS_MODE:internal}
+  reverse_proxy gitea:3000
+}
+
+{$TEAMCITY_DOMAIN:teamcity.localhost} {
+  tls {$CADDY_TLS_MODE:internal}
+  reverse_proxy teamcity-server:8111
+}

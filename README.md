@@ -1,7 +1,8 @@
-# Self-Hosted CI/CD Scaffold (Gitea + TeamCity)
+# Self-Hosted CI/CD Scaffold (Gitea + TeamCity + TLS Proxy)
 
 This repository provides a local/self-hosted CI/CD baseline using Docker containers:
 
+- **Caddy** as reverse proxy + TLS terminator
 - **PostgreSQL** for persistent application databases
 - **Homepage** for quick navigation
 - **Gitea** for source hosting
@@ -36,9 +37,9 @@ All components run with Docker Compose, and setup is driven by a single executab
 ```
 
 2. Open:
-- Homepage: [http://localhost:8080](http://localhost:8080)
-- Gitea: [http://localhost:3000](http://localhost:3000)
-- TeamCity: [http://localhost:8111](http://localhost:8111)
+- Homepage: [https://localhost](https://localhost)
+- Gitea: [https://gitea.localhost](https://gitea.localhost)
+- TeamCity: [https://teamcity.localhost](https://teamcity.localhost)
 
 3. Complete first-run web setup:
 - In Gitea, create your user/org/repos.
@@ -57,15 +58,20 @@ Installer behavior:
 Edit `.env` to change ports, names, and root URL.
 
 Important variables:
+- `HTTP_PORT` / `HTTPS_PORT` (reverse proxy entry ports)
+- `HOMEPAGE_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN`
+- `CADDY_TLS_MODE` (default `internal`)
 - `POSTGRES_PORT` (default `5432`)
 - `POSTGRES_ADMIN_USER` / `POSTGRES_ADMIN_PASSWORD`
 - `GITEA_DB_NAME` / `GITEA_DB_USER` / `GITEA_DB_PASSWORD`
 - `TEAMCITY_DB_NAME` / `TEAMCITY_DB_USER` / `TEAMCITY_DB_PASSWORD`
-- `HOMEPAGE_PORT` (default `8080`)
-- `GITEA_HTTP_PORT` (default `3000`)
 - `GITEA_SSH_PORT` (default `2222`)
 - `TEAMCITY_HTTP_PORT` (default `8111`)
-- `GITEA_ROOT_URL` (default `http://localhost:3000/`)
+- `GITEA_ROOT_URL` (default `https://gitea.localhost/`)
+
+TLS note:
+- Default mode uses `CADDY_TLS_MODE=internal` so certificates are issued by Caddy's internal CA.
+- For public trusted certificates, replace this with an ACME-enabled Caddy config and real DNS records.
 
 ## Operations
 
@@ -87,6 +93,8 @@ You can also use Docker Compose directly.
 ├── docker-compose.yml
 ├── install.sh
 ├── .env.example
+├── caddy/
+│   └── Caddyfile
 ├── homepage/
 │   └── index.html
 ├── postgres/
@@ -109,5 +117,5 @@ You can also use Docker Compose directly.
 
 - TeamCity first startup can take several minutes.
 - Agent uses the host Docker socket (`/var/run/docker.sock`) so builds can run Docker commands.
-- For internet-facing deployments, place a reverse proxy and TLS in front of both services.
+- Caddy is already included as reverse proxy + TLS entrypoint.
 - If you previously started with SQLite/internal DB, remove old data directories before reinstalling to start clean with PostgreSQL.

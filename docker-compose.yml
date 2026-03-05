@@ -1,4 +1,22 @@
 services:
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: ${CADDY_CONTAINER_NAME:-cicd-caddy}
+    restart: unless-stopped
+    depends_on:
+      gitea:
+        condition: service_healthy
+      teamcity-server:
+        condition: service_started
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./homepage:/srv/homepage:ro
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+
   postgres:
     image: postgres:16-alpine
     container_name: ${POSTGRES_CONTAINER_NAME:-cicd-postgres}
@@ -18,15 +36,6 @@ services:
       timeout: 5s
       retries: 10
 
-  homepage:
-    image: nginx:1.27-alpine
-    container_name: ${HOMEPAGE_CONTAINER_NAME:-cicd-homepage}
-    restart: unless-stopped
-    ports:
-      - "${HOMEPAGE_PORT:-8080}:80"
-    volumes:
-      - ./homepage:/usr/share/nginx/html:ro
-
   gitea:
     image: gitea/gitea:1.22.6
     container_name: ${GITEA_CONTAINER_NAME:-gitea}
@@ -34,7 +43,10 @@ services:
     environment:
       USER_UID: ${PUID:-1000}
       USER_GID: ${PGID:-1000}
-      GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:-http://localhost:3000/}
+      GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:-https://gitea.localhost/}
+      GITEA__server__PROTOCOL: http
+      GITEA__server__DOMAIN: ${GITEA_DOMAIN:-gitea.localhost}
+      GITEA__server__HTTP_PORT: 3000
       GITEA__database__DB_TYPE: postgres
       GITEA__database__HOST: postgres:5432
       GITEA__database__NAME: ${GITEA_DB_NAME:-gitea}
@@ -47,7 +59,6 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "${GITEA_HTTP_PORT:-3000}:3000"
       - "${GITEA_SSH_PORT:-2222}:22"
     volumes:
       - ./data/gitea:/data
@@ -62,8 +73,6 @@ services:
     container_name: ${TEAMCITY_SERVER_CONTAINER_NAME:-teamcity-server}
     restart: unless-stopped
     depends_on:
-      homepage:
-        condition: service_started
       postgres:
         condition: service_healthy
       gitea:
