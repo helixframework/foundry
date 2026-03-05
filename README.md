@@ -8,6 +8,7 @@ This repository provides a local/self-hosted CI/CD baseline using Docker contain
 - **Gitea** for source hosting
 - **TeamCity Server** for build orchestration
 - **TeamCity Agent** for build execution
+- **Nexus Repository** for artifact hosting and proxying
 
 All components run with Docker Compose, and setup is driven by a single executable:
 
@@ -40,6 +41,7 @@ All components run with Docker Compose, and setup is driven by a single executab
 - Homepage: [https://localhost](https://localhost)
 - Gitea: [https://gitea.localhost](https://gitea.localhost)
 - TeamCity: [https://teamcity.localhost](https://teamcity.localhost)
+- Nexus: [https://nexus.localhost](https://nexus.localhost)
 
 3. Complete first-run web setup:
 - In Gitea, create your user/org/repos.
@@ -59,7 +61,7 @@ Edit `.env` to change ports, names, and root URL.
 
 Important variables:
 - `HTTP_PORT` / `HTTPS_PORT` (reverse proxy entry ports)
-- `HOMEPAGE_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN`
+- `HOMEPAGE_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN` / `NEXUS_DOMAIN`
 - `CADDY_TLS_MODE` (default `internal`)
 - `POSTGRES_PORT` (default `5432`)
 - `POSTGRES_ADMIN_USER` / `POSTGRES_ADMIN_PASSWORD`
@@ -67,6 +69,7 @@ Important variables:
 - `TEAMCITY_DB_NAME` / `TEAMCITY_DB_USER` / `TEAMCITY_DB_PASSWORD`
 - `GITEA_SSH_PORT` (default `2222`)
 - `TEAMCITY_HTTP_PORT` (default `8111`)
+- `NEXUS_HTTP_PORT` (default `8081`)
 - `GITEA_ROOT_URL` (default `https://gitea.localhost/`)
 
 TLS note:
@@ -86,6 +89,7 @@ Then fully restart your browser and reload:
 - `https://localhost`
 - `https://gitea.localhost`
 - `https://teamcity.localhost`
+- `https://nexus.localhost`
 
 ## Operations
 
@@ -112,7 +116,7 @@ Create a backup:
 
 This creates a timestamped folder in `./backups/` containing:
 - PostgreSQL dumps for Gitea and TeamCity
-- Tar archive of `data/caddy`, `data/gitea`, `data/teamcity`, `homepage`, `caddy`, and `postgres/init`
+- Tar archive of `data/caddy`, `data/gitea`, `data/nexus`, `data/teamcity`, `homepage`, `caddy`, and `postgres/init`
 - `env.snapshot` and metadata
 
 Restore a backup (destructive):
@@ -151,6 +155,7 @@ Restore behavior:
 │   └── logs.sh
 ├── backups/ (generated; gitignored)
 └── data/
+    ├── nexus/
     ├── gitea/
     ├── postgres/
     └── teamcity/
@@ -161,6 +166,7 @@ Restore behavior:
 ## Notes
 
 - TeamCity first startup can take several minutes.
+- Nexus first startup can take several minutes.
 - Agent uses the host Docker socket (`/var/run/docker.sock`) so builds can run Docker commands.
 - Caddy is already included as reverse proxy + TLS entrypoint.
 - If you previously started with SQLite/internal DB, remove old data directories before reinstalling to start clean with PostgreSQL.

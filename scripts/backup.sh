@@ -78,6 +78,7 @@ main() {
   tar -czf "${backup_dir}/files.tar.gz" \
     data/caddy \
     data/gitea \
+    data/nexus \
     data/teamcity \
     homepage \
     caddy \

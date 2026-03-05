@@ -117,7 +117,7 @@ main() {
   $compose down
 
   log "Restoring file data..."
-  rm -rf data/caddy data/gitea data/teamcity
+  rm -rf data/caddy data/gitea data/nexus data/teamcity
   mkdir -p data
   tar -xzf "$backup_dir/files.tar.gz"
 

@@ -13,3 +13,8 @@
   tls {$CADDY_TLS_MODE:internal}
   reverse_proxy teamcity-server:8111
 }
+
+{$NEXUS_DOMAIN:nexus.localhost} {
+  tls {$CADDY_TLS_MODE:internal}
+  reverse_proxy nexus:8081
+}
