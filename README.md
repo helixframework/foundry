@@ -77,6 +77,21 @@ TLS note:
 - Default mode uses `CADDY_TLS_MODE=internal` so certificates are issued by Caddy's internal CA.
 - For public trusted certificates, replace this with an ACME-enabled Caddy config and real DNS records.
 
+### Trust local cert on macOS
+
+If your browser shows "Connection is not secure", trust Caddy's local root CA:
+
+```bash
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \
+  /Users/gwhitake/workspace/foundry/data/caddy/data/caddy/pki/authorities/local/root.crt
+```
+
+Then fully restart your browser and reload:
+- `https://localhost`
+- `https://gitea.localhost`
+- `https://teamcity.localhost`
+- `https://nexus.localhost`
+
 ## Nexus Setup
 
 After first startup, open:
@@ -109,21 +124,6 @@ Common internal repos to create:
 - `npm-hosted` (for internal JS packages)
 
 You can also add proxy repos (`docker-proxy`, `maven-central`, `npmjs`) and then group repos for a single endpoint per ecosystem.
-
-### Trust local cert on macOS
-
-If your browser shows "Connection is not secure", trust Caddy's local root CA:
-
-```bash
-sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \
-  /Users/gwhitake/workspace/foundry/data/caddy/data/caddy/pki/authorities/local/root.crt
-```
-
-Then fully restart your browser and reload:
-- `https://localhost`
-- `https://gitea.localhost`
-- `https://teamcity.localhost`
-- `https://nexus.localhost`
 
 ## Operations
 
