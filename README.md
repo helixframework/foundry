@@ -83,7 +83,7 @@ If your browser shows "Connection is not secure", trust Caddy's local root CA:
 
 ```bash
 sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \
-  /Users/gwhitake/workspace/foundry/data/caddy/data/caddy/pki/authorities/local/root.crt
+  $HOME/foundry/data/caddy/data/caddy/pki/authorities/local/root.crt
 ```
 
 Then fully restart your browser and reload:
