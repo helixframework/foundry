@@ -841,6 +841,59 @@ Helpful commands:
 MSG
 }
 
+prompt_macos_trust_local_cert() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return
+  fi
+
+  if [[ "${CADDY_TLS_MODE}" != "internal" ]]; then
+    return
+  fi
+
+  local cert_path
+  cert_path="${PROJECT_ROOT}/data/caddy/data/caddy/pki/authorities/local/root.crt"
+
+  if [[ ! -t 0 ]]; then
+    log "Skipping macOS cert trust prompt (non-interactive shell)."
+    log "To trust later, run:"
+    log "  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${cert_path}"
+    return
+  fi
+
+  local i
+  for i in $(seq 1 20); do
+    if [[ -f "${cert_path}" ]]; then
+      break
+    fi
+    sleep 1
+  done
+
+  if [[ ! -f "${cert_path}" ]]; then
+    log "Caddy local root cert not found yet at ${cert_path}."
+    log "Open https://${HOMEPAGE_DOMAIN} once, then trust it manually if needed."
+    return
+  fi
+
+  printf "Trust Caddy local CA certificate in macOS System keychain now? [y/N]: "
+  local reply
+  read -r reply
+
+  case "${reply}" in
+    y|Y|yes|YES)
+      if sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "${cert_path}"; then
+        log "Trusted Caddy local CA certificate."
+      else
+        log "Failed to trust certificate automatically."
+        log "You can run manually:"
+        log "  sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${cert_path}"
+      fi
+      ;;
+    *)
+      log "Skipped macOS certificate trust."
+      ;;
+  esac
+}
+
 main() {
   require_cmd docker
 
@@ -865,6 +918,7 @@ main() {
   log "Starting stack with Docker Compose..."
   $compose up -d
 
+  prompt_macos_trust_local_cert
   show_next_steps
 }
 
