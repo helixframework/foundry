@@ -837,6 +837,7 @@ Helpful commands:
 - ./scripts/logs.sh
 - ./scripts/stop.sh
 - ./scripts/start.sh
+- ./scripts/teardown.sh --yes
 MSG
 }
 
