@@ -4,41 +4,301 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Self-Hosted CI/CD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      :root { --bg: #0b1b2b; --bg-accent: #12324a; --card: #ffffff; --text: #0f1720; --muted: #415565; --gitea: #4ea23f; --teamcity: #0b7ed0; }
-      * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; font-family: "Avenir Next", "Segoe UI", sans-serif; background: radial-gradient(55rem 55rem at 15% 10%, #1f5575 0%, transparent 60%), radial-gradient(50rem 50rem at 95% 90%, #204061 0%, transparent 60%), linear-gradient(160deg, var(--bg) 0%, var(--bg-accent) 100%); color: #eef4f9; display: grid; place-items: center; padding: 1.5rem; }
-      main { width: min(920px, 100%); }
-      h1 { margin: 0 0 0.5rem; font-size: clamp(1.8rem, 3vw, 2.7rem); }
-      p.lead { margin: 0 0 1.5rem; color: #d2e1ec; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-      .card { background: var(--card); border-radius: 14px; padding: 1.1rem 1.2rem; color: var(--text); box-shadow: 0 12px 30px rgba(8, 20, 31, 0.28); display: flex; flex-direction: column; gap: 0.75rem; }
-      .card h2 { margin: 0; }
-      .meta { color: var(--muted); font-size: 0.95rem; margin: 0; }
-      a.btn { text-decoration: none; color: #fff; font-weight: 600; border-radius: 10px; padding: 0.62rem 0.85rem; width: fit-content; }
-      a.gitea { background: var(--gitea); }
-      a.teamcity { background: var(--teamcity); }
+      :root {
+        --bg: #050b14;
+        --bg-soft: #081423;
+        --ink: #ecf4ff;
+        --muted: #9ab0c6;
+        --line: #24445f;
+        --blue: #4e9dff;
+        --teal: #29d7ca;
+        --font-display: "Sora", sans-serif;
+        --font-body: "Space Grotesk", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(1100px 560px at 110% -8%, rgba(78, 157, 255, 0.2), transparent 60%),
+          radial-gradient(900px 420px at -8% -5%, rgba(41, 215, 202, 0.12), transparent 60%),
+          linear-gradient(180deg, var(--bg) 0%, #040911 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.15;
+        background-image:
+          linear-gradient(to right, rgba(149, 185, 221, 0.15) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(149, 185, 221, 0.15) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+
+      .wrap {
+        width: min(980px, calc(100% - 44px));
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      .topbar {
+        height: 78px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(54, 90, 120, 0.45);
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(8px);
+        background: rgba(5, 11, 20, 0.88);
+      }
+
+      .brand {
+        color: var(--ink);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+
+      .logo {
+        width: 34px;
+        height: 34px;
+        border: 1px solid #335c81;
+        background: #10263b;
+        display: grid;
+        place-items: center;
+      }
+
+      .logo svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .logo .a {
+        stroke: var(--blue);
+        stroke-width: 2;
+      }
+
+      .logo .b {
+        stroke: var(--teal);
+        stroke-width: 2;
+      }
+
+      .top-link {
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border: 1px solid #355f85;
+        background: #10263b;
+        padding: 9px 12px;
+      }
+
+      .hero {
+        padding: 68px 0 44px;
+        border-bottom: 1px solid rgba(48, 79, 107, 0.5);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: #80b2ff;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5.8vw, 4.5rem);
+        line-height: 1.04;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+      }
+
+      .hero-title-soft {
+        color: #dce9f7;
+      }
+
+      .hero-title-accent {
+        background: linear-gradient(110deg, #67a8ff 0%, #76c7ff 45%, #3fe3d6 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lead {
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.62;
+        max-width: 54ch;
+      }
+
+      .services {
+        margin: 28px 0 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(16, 41, 64, 0.56), rgba(9, 21, 33, 0.45));
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 1.45rem;
+        letter-spacing: -0.01em;
+      }
+
+      .meta {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .url {
+        margin: 0;
+        color: #d5e9fb;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.83rem;
+      }
+
+      .actions {
+        margin-top: 4px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 10px 13px;
+        transition: transform 140ms ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn.primary {
+        color: #eef7ff;
+        background: linear-gradient(140deg, #4b9cff, #3069d3);
+      }
+
+      .btn.secondary {
+        color: var(--ink);
+        border: 1px solid #3c648a;
+        background: #112940;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 18px 0 28px;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      @media (max-width: 640px) {
+        .topbar {
+          height: 70px;
+        }
+
+        .brand span {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Self-Hosted CI/CD</h1>
-      <p class="lead">Quick access to your local Gitea and TeamCity services.</p>
-      <div class="grid">
-        <section class="card">
+    <div class="wrap">
+      <header class="topbar">
+        <a class="brand" href="https://localhost">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path class="a" d="M3 18L12 6l9 12" />
+              <path class="b" d="M3 6h18" />
+            </svg>
+          </span>
+          <span>Platform Control</span>
+        </a>
+        <a class="top-link" href="https://localhost">Homepage</a>
+      </header>
+
+      <main class="hero">
+        <p class="eyebrow">Internal Platform</p>
+        <h1>
+          <span class="hero-title-soft">Self-Hosted</span>
+          <span class="hero-title-accent">CI/CD Stack</span>
+        </h1>
+        <p class="lead">
+          Quick access to your local developer platform services with a Helix-style control surface.
+        </p>
+      </main>
+
+      <section class="services" aria-label="Services">
+        <article class="card">
           <h2>Gitea</h2>
           <p class="meta">Git hosting and repository management</p>
-          <a class="btn gitea" href="https://gitea.localhost">Open Gitea</a>
-          <p class="meta">https://gitea.localhost</p>
-        </section>
-        <section class="card">
+          <p class="url">https://gitea.localhost</p>
+          <div class="actions">
+            <a class="btn primary" href="https://gitea.localhost">Open Gitea</a>
+          </div>
+        </article>
+        <article class="card">
           <h2>TeamCity</h2>
           <p class="meta">Build server and pipeline orchestration</p>
-          <a class="btn teamcity" href="https://teamcity.localhost">Open TeamCity</a>
-          <p class="meta">https://teamcity.localhost</p>
-        </section>
-      </div>
-      <p class="meta">Run ./install.sh to regenerate this page from your configured domains.</p>
-    </main>
+          <p class="url">https://teamcity.localhost</p>
+          <div class="actions">
+            <a class="btn secondary" href="https://teamcity.localhost">Open TeamCity</a>
+          </div>
+        </article>
+      </section>
+
+      <footer>Homepage: https://localhost</footer>
+    </div>
   </body>
 </html>

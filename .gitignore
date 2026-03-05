@@ -1,3 +1,8 @@
 .env
 data/
 postgres/init/01-init-app-dbs.sql
+backups/
+
+# macOS
+.DS_Store
+._*
