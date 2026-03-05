@@ -841,6 +841,20 @@ Helpful commands:
 MSG
 }
 
+print_nexus_initial_password() {
+  local compose password
+  compose="$(compose_cmd)"
+
+  password="$($compose exec -T nexus sh -c 'cat /nexus-data/admin.password 2>/dev/null || true' | tr -d '\r')"
+  if [[ -n "${password}" ]]; then
+    log "Nexus initial admin password: ${password}"
+    return
+  fi
+
+  log "Nexus initial admin password not available yet (Nexus may still be initializing)."
+  log "Retrieve it with: $compose exec nexus cat /nexus-data/admin.password"
+}
+
 prompt_macos_trust_local_cert() {
   if [[ "$(uname -s)" != "Darwin" ]]; then
     return
@@ -918,6 +932,7 @@ main() {
   log "Starting stack with Docker Compose..."
   $compose up -d
 
+  print_nexus_initial_password
   prompt_macos_trust_local_cert
   show_next_steps
 }
