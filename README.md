@@ -102,6 +102,7 @@ Use helper scripts:
 ./scripts/logs.sh
 ./scripts/backup.sh
 ./scripts/restore.sh backups/<timestamp> --yes
+./scripts/teardown.sh --yes
 ```
 
 You can also use Docker Compose directly.
@@ -132,6 +133,17 @@ Restore behavior:
 - Restores database dumps
 - Starts the stack again
 
+Full teardown (destructive):
+
+```bash
+./scripts/teardown.sh --yes
+```
+
+Teardown behavior:
+- Stops and removes the full stack
+- Deletes persisted runtime data under `data/`, `backups/`, and `postgres/init/`
+- Recreates base empty directories so `./install.sh` can bootstrap cleanly
+
 ## Directory Layout
 
 ```text
@@ -149,6 +161,7 @@ Restore behavior:
 ├── scripts/
 │   ├── backup.sh
 │   ├── restore.sh
+│   ├── teardown.sh
 │   ├── start.sh
 │   ├── stop.sh
 │   ├── status.sh
