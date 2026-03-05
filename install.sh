@@ -54,12 +54,15 @@ generate_env() {
 create_dirs() {
   local dirs=(
     data/gitea
+    data/postgres
     data/teamcity/server/data
+    data/teamcity/server/data/config
     data/teamcity/server/logs
     data/teamcity/agent/conf
     data/teamcity/agent/work
     data/teamcity/agent/temp
     data/teamcity/agent/system
+    postgres/init
   )
 
   for d in "${dirs[@]}"; do
@@ -67,6 +70,50 @@ create_dirs() {
   done
 
   log "Ensured persistent data directories exist under ./data/."
+}
+
+load_env() {
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+}
+
+apply_env_defaults() {
+  : "${GITEA_DB_NAME:=gitea}"
+  : "${GITEA_DB_USER:=gitea}"
+  : "${GITEA_DB_PASSWORD:=gitea_password}"
+  : "${TEAMCITY_DB_NAME:=teamcity}"
+  : "${TEAMCITY_DB_USER:=teamcity}"
+  : "${TEAMCITY_DB_PASSWORD:=teamcity_password}"
+}
+
+render_postgres_init_sql() {
+  local gitea_pw teamcity_pw
+  gitea_pw="${GITEA_DB_PASSWORD//\'/\'\'}"
+  teamcity_pw="${TEAMCITY_DB_PASSWORD//\'/\'\'}"
+
+  cat > postgres/init/01-init-app-dbs.sql <<EOF
+CREATE ROLE ${GITEA_DB_USER} LOGIN PASSWORD '${gitea_pw}';
+CREATE DATABASE ${GITEA_DB_NAME} OWNER ${GITEA_DB_USER};
+
+CREATE ROLE ${TEAMCITY_DB_USER} LOGIN PASSWORD '${teamcity_pw}';
+CREATE DATABASE ${TEAMCITY_DB_NAME} OWNER ${TEAMCITY_DB_USER};
+EOF
+
+  log "Generated postgres/init/01-init-app-dbs.sql from .env."
+}
+
+render_teamcity_database_properties() {
+  cat > data/teamcity/server/data/config/database.properties <<EOF
+connectionUrl=jdbc:postgresql://postgres:5432/${TEAMCITY_DB_NAME}
+connectionProperties.user=${TEAMCITY_DB_USER}
+connectionProperties.password=${TEAMCITY_DB_PASSWORD}
+maxConnections=50
+testOnBorrow=true
+EOF
+
+  log "Generated TeamCity database config at data/teamcity/server/data/config/database.properties."
 }
 
 show_next_steps() {
@@ -80,7 +127,8 @@ Open these URLs:
 - TeamCity: http://localhost:8111
 
 First-run notes:
-- Gitea is pre-locked to sqlite and configured for containerized data persistence.
+- Gitea is configured to use PostgreSQL.
+- TeamCity is configured to use PostgreSQL via database.properties.
 - TeamCity will take a minute or two on first boot and then ask for setup in the web UI.
 - In TeamCity, connect VCS root to your Gitea repo URL.
 
@@ -104,6 +152,10 @@ main() {
 
   create_dirs
   generate_env
+  load_env
+  apply_env_defaults
+  render_postgres_init_sql
+  render_teamcity_database_properties
 
   log "Pulling container images..."
   $compose pull
