@@ -39,7 +39,7 @@ services:
       retries: 10
 
   gitea:
-    image: gitea/gitea:1.22.6
+    image: gitea/gitea:1.25.4
     container_name: ${GITEA_CONTAINER_NAME:-gitea}
     restart: unless-stopped
     environment:
@@ -71,7 +71,7 @@ services:
       retries: 10
 
   teamcity-server:
-    image: jetbrains/teamcity-server:2025.03
+    image: jetbrains/teamcity-server:2025.11.3
     container_name: ${TEAMCITY_SERVER_CONTAINER_NAME:-teamcity-server}
     restart: unless-stopped
     depends_on:
@@ -91,7 +91,7 @@ services:
       retries: 15
 
   teamcity-agent:
-    image: jetbrains/teamcity-agent:2025.03
+    image: jetbrains/teamcity-agent:2025.11.3
     container_name: ${TEAMCITY_AGENT_CONTAINER_NAME:-teamcity-agent-1}
     restart: unless-stopped
     depends_on:
@@ -109,7 +109,7 @@ services:
       - ./data/teamcity/agent/system:/opt/buildagent/system
 
   nexus:
-    image: sonatype/nexus3:latest
+    image: sonatype/nexus3:3.87.2-alpine
     container_name: ${NEXUS_CONTAINER_NAME:-nexus}
     restart: unless-stopped
     ports:
