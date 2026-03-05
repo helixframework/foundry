@@ -46,6 +46,7 @@ All components run with Docker Compose, and setup is driven by a single executab
 3. Complete first-run web setup:
 - In Gitea, create your user/org/repos.
 - In TeamCity, finish server setup, authorize the connected agent, and configure VCS roots pointing to Gitea.
+- In Nexus, sign in with the initial admin password and complete the onboarding flow.
 
 ## Configuration
 
@@ -75,6 +76,39 @@ Important variables:
 TLS note:
 - Default mode uses `CADDY_TLS_MODE=internal` so certificates are issued by Caddy's internal CA.
 - For public trusted certificates, replace this with an ACME-enabled Caddy config and real DNS records.
+
+## Nexus Setup
+
+After first startup, open:
+- `https://nexus.localhost`
+
+### Initial admin login
+
+Nexus creates a one-time admin password inside the container volume. Read it with:
+
+```bash
+docker compose exec nexus cat /nexus-data/admin.password
+```
+
+Then log in with:
+- Username: `admin`
+- Password: value from `admin.password`
+
+### First-run wizard
+
+Recommended choices:
+1. Set a new admin password.
+2. Choose anonymous access policy based on your needs (usually disabled for private/internal use).
+3. Finish onboarding.
+
+### Create repositories
+
+Common internal repos to create:
+- `docker-hosted` (for your private container images)
+- `maven2-hosted` (for internal Java artifacts)
+- `npm-hosted` (for internal JS packages)
+
+You can also add proxy repos (`docker-proxy`, `maven-central`, `npmjs`) and then group repos for a single endpoint per ecosystem.
 
 ### Trust local cert on macOS
 
