@@ -93,6 +93,7 @@ apply_env_defaults() {
   : "${GITEA_DOMAIN:=gitea.localhost}"
   : "${TEAMCITY_DOMAIN:=teamcity.localhost}"
   : "${NEXUS_DOMAIN:=nexus.localhost}"
+  : "${BUILD_CACHE_DOMAIN:=build-cache.localhost}"
   : "${FOUNDRY_VERSION:=0.1.0}"
   : "${CADDY_TLS_MODE:=internal}"
   : "${GITEA_ROOT_URL:=https://${GITEA_DOMAIN}/}"
@@ -862,6 +863,7 @@ Open these URLs:
 - Gitea:    ${GITEA_ROOT_URL}
 - TeamCity: https://${TEAMCITY_DOMAIN}
 - Nexus:    https://${NEXUS_DOMAIN}
+- Build Cache: https://${BUILD_CACHE_DOMAIN}/cache/
 
 First-run notes:
 - Gitea is configured to use PostgreSQL.
