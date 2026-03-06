@@ -1,6 +1,9 @@
-{$HOMEPAGE_DOMAIN:localhost} {
+{$DASHBOARD_DOMAIN:localhost} {
   tls {$CADDY_TLS_MODE:internal}
-  root * /srv/homepage
+  handle /api/* {
+    reverse_proxy dashboard-api:8080
+  }
+  root * /srv/dashboard-web
   file_server
 }
 

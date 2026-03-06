@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Self-Hosted CI/CD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="topbar">
+        <a class="brand" href="https://localhost">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path class="a" d="M3 18L12 6l9 12" />
+              <path class="b" d="M3 6h18" />
+            </svg>
+          </span>
+          <span>Helix</span>
+        </a>
+        <div class="top-actions">
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            <span class="switch-label" id="theme-toggle-label">Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="hero">
+        <article>
+          <p class="eyebrow">Operations Dashboard</p>
+          <h1>Helix <span class="title-accent">Foundry</span></h1>
+        </article>
+        <aside class="hero-panel" aria-label="Environment Summary">
+          <h2>Environment Summary</h2>
+          <dl class="kv">
+            <dt>Environment</dt>
+            <dd id="summary-environment">local</dd>
+            <dt>Dashboard</dt>
+            <dd id="summary-dashboard">https://localhost</dd>
+            <dt>Started</dt>
+            <dd id="summary-started">2026-03-05 15:06:38 CST</dd>
+            <dt>Last Backup</dt>
+            <dd id="summary-backup-time">Checking...</dd>
+            <dt>Backup Size</dt>
+            <dd id="summary-backup-size">--</dd>
+            <dt>Backup Health</dt>
+            <dd id="summary-backup-health">Checking...</dd>
+          </dl>
+        </aside>
+      </main>
+
+      <section class="services" aria-label="Services">
+        <article class="card" data-service-id="gitea">
+          <div class="card-head">
+            <h2>Gitea</h2>
+            <span class="badge ok" data-service-status>Healthy</span>
+          </div>
+          <p class="meta" data-service-description>Git hosting and repository management</p>
+          <p class="url" data-service-url>https://gitea.localhost</p>
+          <p class="resource-usage">
+            CPU <span data-service-cpu>--</span>
+            <span class="resource-sep">|</span>
+            Memory <span data-service-memory>--</span>
+          </p>
+          <div class="actions">
+            <a class="btn primary" data-service-open href="https://gitea.localhost" target="_blank" rel="noopener noreferrer">Open</a>
+            <a class="btn secondary" data-service-docs href="https://docs.gitea.com/" target="_blank" rel="noopener noreferrer">Docs</a>
+            <button class="btn secondary" type="button" data-open-logs>Logs</button>
+            <button class="btn secondary" type="button" data-service-cmd-restart data-copy="docker compose restart gitea">Restart</button>
+          </div>
+        </article>
+        <article class="card" data-service-id="teamcity">
+          <div class="card-head">
+            <h2>TeamCity</h2>
+            <span class="badge ok" data-service-status>Healthy</span>
+          </div>
+          <p class="meta" data-service-description>Build server and pipeline orchestration</p>
+          <p class="url" data-service-url>https://teamcity.localhost</p>
+          <p class="resource-usage">
+            CPU <span data-service-cpu>--</span>
+            <span class="resource-sep">|</span>
+            Memory <span data-service-memory>--</span>
+          </p>
+          <div class="actions">
+            <a class="btn primary" data-service-open href="https://teamcity.localhost" target="_blank" rel="noopener noreferrer">Open</a>
+            <a class="btn secondary" data-service-docs href="https://www.jetbrains.com/help/teamcity/" target="_blank" rel="noopener noreferrer">Docs</a>
+            <button class="btn secondary" type="button" data-open-logs>Logs</button>
+            <button class="btn secondary" type="button" data-service-cmd-restart data-copy="docker compose restart teamcity-server">Restart</button>
+          </div>
+        </article>
+        <article class="card" data-service-id="nexus">
+          <div class="card-head">
+            <h2>Nexus</h2>
+            <span class="badge ok" data-service-status>Healthy</span>
+          </div>
+          <p class="meta" data-service-description>Artifact and repository management</p>
+          <p class="url" data-service-url>https://nexus.localhost</p>
+          <p class="resource-usage">
+            CPU <span data-service-cpu>--</span>
+            <span class="resource-sep">|</span>
+            Memory <span data-service-memory>--</span>
+          </p>
+          <div class="actions">
+            <a class="btn primary" data-service-open href="https://nexus.localhost" target="_blank" rel="noopener noreferrer">Open</a>
+            <a class="btn secondary" data-service-docs href="https://help.sonatype.com/en/nexus-repository-manager.html" target="_blank" rel="noopener noreferrer">Docs</a>
+            <button class="btn secondary" type="button" data-open-logs>Logs</button>
+            <button class="btn secondary" type="button" data-service-cmd-restart data-copy="docker compose restart nexus">Restart</button>
+          </div>
+        </article>
+      </section>
+
+      <section class="activity" aria-label="Live Alerts">
+        <div class="activity-head">
+          <h2>Live Alerts</h2>
+          <span class="cmd" id="alerts-last-check">Waiting for first poll...</span>
+        </div>
+        <ul class="activity-list" id="alerts-list">
+          <li class="activity-empty">
+            <p>No alerts yet. Monitoring service health and warning/error logs.</p>
+          </li>
+        </ul>
+      </section>
+
+      <footer class="footer">
+        <span>&copy; 2026 Helix Framework</span>
+        <a class="github-link" href="https://github.com/helixframework/foundry" aria-label="Foundry on GitHub" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" role="img" focusable="false" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52 0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.53 7.53 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+          </svg>
+        </a>
+      </footer>
+    </div>
+    <script>
+      (function () {
+        var key = "foundry-theme";
+        var root = document.documentElement;
+        var toggle = document.getElementById("theme-toggle");
+        var label = document.getElementById("theme-toggle-label");
+        if (!toggle) return;
+
+        function applyTheme(theme) {
+          root.setAttribute("data-theme", theme);
+          toggle.setAttribute("aria-checked", theme === "light" ? "true" : "false");
+          toggle.setAttribute("data-theme", theme);
+          if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
+        }
+
+        var stored = localStorage.getItem(key);
+        var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+        applyTheme(stored || preferred);
+
+        toggle.addEventListener("click", function () {
+          var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          applyTheme(next);
+          localStorage.setItem(key, next);
+        });
+
+        var copyButtons = document.querySelectorAll("[data-copy]:not([data-service-cmd-restart])");
+        copyButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var command = button.getAttribute("data-copy");
+            navigator.clipboard.writeText(command);
+          });
+        });
+
+        var logButtons = document.querySelectorAll("[data-open-logs]");
+        logButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var card = button.closest("[data-service-id]");
+            if (!card) return;
+            var serviceId = card.getAttribute("data-service-id");
+            if (!serviceId) return;
+            window.open("/logs.html?service=" + encodeURIComponent(serviceId), "_blank", "noopener");
+          });
+        });
+
+        var alertsList = document.getElementById("alerts-list");
+        var alertsLastCheck = document.getElementById("alerts-last-check");
+        var alerts = [];
+        var alertSeenAt = {};
+        var maxAlerts = 24;
+        var serviceHealth = {};
+        var backupStaleState = null;
+        var streamState = {};
+        var streamReconnectTimers = {};
+        var restartInFlight = {};
+
+        function addAlert(severity, source, message) {
+          var now = Date.now();
+          var dedupeKey = source + "|" + message;
+          if (alertSeenAt[dedupeKey] && now - alertSeenAt[dedupeKey] < 60000) return;
+          alertSeenAt[dedupeKey] = now;
+
+          alerts.unshift({
+            severity: severity,
+            source: source,
+            message: message,
+            time: new Date()
+          });
+          if (alerts.length > maxAlerts) alerts.length = maxAlerts;
+          renderAlerts();
+        }
+
+        function renderAlerts() {
+          if (!alertsList) return;
+          alertsList.innerHTML = "";
+
+          if (!alerts.length) {
+            var emptyItem = document.createElement("li");
+            emptyItem.className = "activity-empty";
+            var emptyText = document.createElement("p");
+            emptyText.textContent = "No alerts yet. Monitoring service health and warning/error logs.";
+            emptyItem.appendChild(emptyText);
+            alertsList.appendChild(emptyItem);
+            return;
+          }
+
+          alerts.forEach(function (alert) {
+            var item = document.createElement("li");
+
+            var text = document.createElement("p");
+            text.textContent = "[" + alert.time.toLocaleTimeString() + "] " + alert.message;
+            item.appendChild(text);
+
+            var meta = document.createElement("div");
+            meta.className = "activity-meta";
+
+            var source = document.createElement("span");
+            source.className = "cmd";
+            source.textContent = alert.source;
+            meta.appendChild(source);
+
+            var pill = document.createElement("span");
+            pill.className = "alert-pill " + alert.severity;
+            pill.textContent = alert.severity.toUpperCase();
+            meta.appendChild(pill);
+
+            item.appendChild(meta);
+            alertsList.appendChild(item);
+          });
+        }
+
+        function shouldAlertLine(line) {
+          var lower = line.toLowerCase();
+          return (
+            lower.indexOf("error") >= 0 ||
+            lower.indexOf("warn") >= 0 ||
+            lower.indexOf("exception") >= 0 ||
+            lower.indexOf("failed") >= 0 ||
+            lower.indexOf("unauthorized") >= 0
+          );
+        }
+
+        function getLineSeverity(line) {
+          var lower = line.toLowerCase();
+          if (lower.indexOf("error") >= 0 || lower.indexOf("exception") >= 0 || lower.indexOf("failed") >= 0) {
+            return "error";
+          }
+          if (lower.indexOf("warn") >= 0 || lower.indexOf("unauthorized") >= 0) {
+            return "warn";
+          }
+          return "info";
+        }
+
+        function scheduleStreamReconnect(serviceId) {
+          if (streamReconnectTimers[serviceId]) return;
+          streamReconnectTimers[serviceId] = setTimeout(function () {
+            streamReconnectTimers[serviceId] = null;
+            connectServiceStream(serviceId);
+          }, 2500);
+        }
+
+        function connectServiceStream(serviceId) {
+          if (streamState[serviceId] && streamState[serviceId].es) {
+            streamState[serviceId].es.close();
+          }
+
+          var stream = new EventSource(
+            "/api/services/" + encodeURIComponent(serviceId) + "/logs/stream?tail=5"
+          );
+          streamState[serviceId] = {
+            es: stream,
+            connected: false
+          };
+
+          stream.addEventListener("open", function () {
+            if (streamState[serviceId]) streamState[serviceId].connected = true;
+          });
+
+          stream.addEventListener("line", function (event) {
+            var line = event.data || "";
+            if (!shouldAlertLine(line)) return;
+            addAlert(getLineSeverity(line), serviceId, line);
+          });
+
+          stream.addEventListener("error", function () {
+            stream.close();
+            if (streamState[serviceId]) streamState[serviceId].connected = false;
+            scheduleStreamReconnect(serviceId);
+          });
+        }
+
+        function handleRestartClick(button) {
+          var card = button.closest("[data-service-id]");
+          if (!card) return;
+          var serviceId = card.getAttribute("data-service-id");
+          if (!serviceId || restartInFlight[serviceId]) return;
+
+          restartInFlight[serviceId] = true;
+          var previousText = button.textContent;
+          button.disabled = true;
+          button.textContent = "Restarting...";
+
+          fetch("/api/services/" + encodeURIComponent(serviceId) + "/restart", {
+            method: "POST",
+            headers: { Accept: "application/json" }
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error("restart request failed");
+              return response.json();
+            })
+            .then(function () {
+              addAlert("info", serviceId, "Restart requested.");
+              setTimeout(hydrateDashboard, 1000);
+            })
+            .catch(function () {
+              addAlert("error", serviceId, "Restart failed.");
+            })
+            .finally(function () {
+              restartInFlight[serviceId] = false;
+              button.disabled = false;
+              button.textContent = previousText;
+            });
+        }
+
+        var restartButtons = document.querySelectorAll("[data-service-cmd-restart]");
+        restartButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            handleRestartClick(button);
+          });
+        });
+
+        function applyServiceCard(service) {
+          var card = document.querySelector('[data-service-id="' + service.id + '"]');
+          if (!card) return;
+
+          var status = card.querySelector("[data-service-status]");
+          if (status) {
+            status.textContent = service.status;
+            status.classList.remove("ok", "warn");
+            status.classList.add(service.status === "Healthy" ? "ok" : "warn");
+          }
+
+          var description = card.querySelector("[data-service-description]");
+          if (description && service.description) description.textContent = service.description;
+
+          var url = card.querySelector("[data-service-url]");
+          if (url && service.url) url.textContent = service.url;
+
+          var open = card.querySelector("[data-service-open]");
+          if (open && service.url) open.href = service.url;
+
+          var docs = card.querySelector("[data-service-docs]");
+          if (docs && service.docsUrl) docs.href = service.docsUrl;
+
+          var cpu = card.querySelector("[data-service-cpu]");
+          if (cpu && service.resourceUsage && service.resourceUsage.cpu) {
+            cpu.textContent = service.resourceUsage.cpu;
+          }
+
+          var memory = card.querySelector("[data-service-memory]");
+          if (memory && service.resourceUsage && service.resourceUsage.memory) {
+            memory.textContent = service.resourceUsage.memory;
+          }
+
+          var cmdRestart = card.querySelector("[data-service-cmd-restart]");
+          if (cmdRestart && service.commands && service.commands.restart) {
+            cmdRestart.setAttribute("data-copy", service.commands.restart);
+          }
+        }
+
+        var dashboardRefreshMs = 15000;
+        var dashboardRequestInFlight = false;
+
+        function hydrateDashboard() {
+          if (dashboardRequestInFlight) return;
+          dashboardRequestInFlight = true;
+
+          fetch("/api/dashboard", { headers: { Accept: "application/json" } })
+            .then(function (response) {
+              if (!response.ok) throw new Error("dashboard request failed");
+              return response.json();
+            })
+            .then(function (dashboard) {
+              var env = document.getElementById("summary-environment");
+              var dashboardUrl = document.getElementById("summary-dashboard");
+              var started = document.getElementById("summary-started");
+              var backupTime = document.getElementById("summary-backup-time");
+              var backupSize = document.getElementById("summary-backup-size");
+              var backupHealth = document.getElementById("summary-backup-health");
+              if (env && dashboard.environment) env.textContent = dashboard.environment;
+              if (dashboardUrl && dashboard.dashboardUrl) dashboardUrl.textContent = dashboard.dashboardUrl;
+              if (started && dashboard.startedAt) started.textContent = dashboard.startedAt;
+
+              if (dashboard.backupStatus) {
+                if (backupTime && dashboard.backupStatus.latestBackupAt) {
+                  backupTime.textContent = dashboard.backupStatus.latestBackupAt;
+                }
+                if (backupSize && dashboard.backupStatus.latestBackupSize) {
+                  backupSize.textContent = dashboard.backupStatus.latestBackupSize;
+                }
+                if (backupHealth && dashboard.backupStatus.statusMessage) {
+                  backupHealth.textContent = dashboard.backupStatus.statusMessage;
+                  backupHealth.classList.add("health-state");
+                  backupHealth.classList.remove("ok", "bad");
+                  backupHealth.classList.add(dashboard.backupStatus.stale ? "bad" : "ok");
+                }
+
+                if (backupStaleState === null) {
+                  backupStaleState = !!dashboard.backupStatus.stale;
+                  if (backupStaleState) {
+                    addAlert("warn", "backup", dashboard.backupStatus.statusMessage);
+                  }
+                } else if (backupStaleState !== !!dashboard.backupStatus.stale) {
+                  backupStaleState = !!dashboard.backupStatus.stale;
+                  addAlert(
+                    backupStaleState ? "warn" : "info",
+                    "backup",
+                    dashboard.backupStatus.statusMessage
+                  );
+                }
+              }
+
+              if (Array.isArray(dashboard.services)) {
+                dashboard.services.forEach(function (service) {
+                  var previous = serviceHealth[service.id];
+                  if (previous && previous !== service.status) {
+                    addAlert(
+                      service.status === "Healthy" ? "info" : "warn",
+                      service.id,
+                      "Health changed: " + previous + " -> " + service.status
+                    );
+                  }
+                  serviceHealth[service.id] = service.status;
+                });
+                dashboard.services.forEach(applyServiceCard);
+              }
+            })
+            .catch(function () {
+              addAlert("error", "dashboard", "Dashboard API request failed.");
+            })
+            .finally(function () {
+              if (alertsLastCheck) {
+                alertsLastCheck.textContent = "Last checked " + new Date().toLocaleTimeString();
+              }
+              dashboardRequestInFlight = false;
+            });
+        }
+
+        ["gitea", "teamcity", "nexus"].forEach(connectServiceStream);
+        hydrateDashboard();
+        setInterval(hydrateDashboard, dashboardRefreshMs);
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") {
+            hydrateDashboard();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

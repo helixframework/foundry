@@ -80,7 +80,7 @@ main() {
     data/gitea \
     data/nexus \
     data/teamcity \
-    homepage \
+    dashboard-web \
     caddy \
     postgres/init
 

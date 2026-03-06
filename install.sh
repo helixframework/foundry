@@ -89,7 +89,7 @@ apply_env_defaults() {
   : "${TEAMCITY_DB_NAME:=teamcity}"
   : "${TEAMCITY_DB_USER:=teamcity}"
   : "${TEAMCITY_DB_PASSWORD:=teamcity_password}"
-  : "${HOMEPAGE_DOMAIN:=localhost}"
+  : "${DASHBOARD_DOMAIN:=localhost}"
   : "${GITEA_DOMAIN:=gitea.localhost}"
   : "${TEAMCITY_DOMAIN:=teamcity.localhost}"
   : "${NEXUS_DOMAIN:=nexus.localhost}"
@@ -125,15 +125,20 @@ EOF
   log "Generated TeamCity database config at data/teamcity/server/data/config/database.properties."
 }
 
-render_homepage_html() {
-  local homepage_url gitea_url teamcity_url nexus_url started_at
-  homepage_url="https://${HOMEPAGE_DOMAIN}"
+render_dashboard_web_html() {
+  if [[ -f dashboard-web/index.html ]]; then
+    log "Keeping existing dashboard-web/index.html."
+    return
+  fi
+
+  local dashboard_url gitea_url teamcity_url nexus_url started_at
+  dashboard_url="https://${DASHBOARD_DOMAIN}"
   gitea_url="${GITEA_ROOT_URL%/}"
   teamcity_url="https://${TEAMCITY_DOMAIN}"
   nexus_url="https://${NEXUS_DOMAIN}"
   started_at="$(date '+%Y-%m-%d %H:%M:%S %Z')"
 
-  cat > homepage/index.html <<EOF
+  cat > dashboard-web/index.html <<EOF
 <!doctype html>
 <html lang="en">
   <head>
@@ -364,7 +369,7 @@ render_homepage_html() {
       }
 
       .hero {
-        padding: 44px 0 28px;
+        padding: 28px 0 16px;
         border-bottom: 1px solid var(--section-border);
         display: grid;
         grid-template-columns: 1.2fr 0.8fr;
@@ -408,7 +413,7 @@ render_homepage_html() {
       .hero-panel {
         border: 1px solid var(--line);
         background: var(--panel-bg);
-        padding: 14px;
+        padding: 10px;
       }
 
       .hero-panel h2 {
@@ -507,6 +512,26 @@ render_homepage_html() {
         color: var(--code);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.83rem;
+      }
+
+      .resource-usage {
+        margin: -2px 0 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .resource-usage span {
+        color: var(--code);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .resource-usage .resource-sep {
+        color: var(--muted);
+        font-family: var(--font-body);
       }
 
       .actions {
@@ -660,7 +685,7 @@ render_homepage_html() {
   <body>
     <div class="wrap">
       <header class="topbar">
-        <a class="brand" href="${homepage_url}">
+        <a class="brand" href="${dashboard_url}">
           <span class="logo" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path class="a" d="M3 18L12 6l9 12" />
@@ -687,8 +712,8 @@ render_homepage_html() {
           <dl class="kv">
             <dt>Environment</dt>
             <dd>local</dd>
-            <dt>Homepage</dt>
-            <dd>${homepage_url}</dd>
+            <dt>Dashboard</dt>
+            <dd>${dashboard_url}</dd>
             <dt>Started</dt>
             <dd>${started_at}</dd>
           </dl>
@@ -703,10 +728,10 @@ render_homepage_html() {
           </div>
           <p class="meta">Git hosting and repository management</p>
           <p class="url">${gitea_url}</p>
+          <p class="resource-usage">CPU <span>--</span><span class="resource-sep">|</span>Memory <span>--</span></p>
           <div class="actions">
             <a class="btn primary" href="${gitea_url}" target="_blank" rel="noopener noreferrer">Open</a>
             <a class="btn secondary" href="https://docs.gitea.com/" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps gitea">Status</button>
             <button class="btn secondary" type="button" data-copy="docker compose logs -f gitea">Logs</button>
             <button class="btn secondary" type="button" data-copy="docker compose restart gitea">Restart</button>
           </div>
@@ -718,10 +743,10 @@ render_homepage_html() {
           </div>
           <p class="meta">Build server and pipeline orchestration</p>
           <p class="url">${teamcity_url}</p>
+          <p class="resource-usage">CPU <span>--</span><span class="resource-sep">|</span>Memory <span>--</span></p>
           <div class="actions">
             <a class="btn primary" href="${teamcity_url}" target="_blank" rel="noopener noreferrer">Open</a>
             <a class="btn secondary" href="https://www.jetbrains.com/help/teamcity/" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps teamcity-server">Status</button>
             <button class="btn secondary" type="button" data-copy="docker compose logs -f teamcity-server">Logs</button>
             <button class="btn secondary" type="button" data-copy="docker compose restart teamcity-server">Restart</button>
           </div>
@@ -733,10 +758,10 @@ render_homepage_html() {
           </div>
           <p class="meta">Artifact and repository management</p>
           <p class="url">${nexus_url}</p>
+          <p class="resource-usage">CPU <span>--</span><span class="resource-sep">|</span>Memory <span>--</span></p>
           <div class="actions">
             <a class="btn primary" href="${nexus_url}" target="_blank" rel="noopener noreferrer">Open</a>
             <a class="btn secondary" href="https://help.sonatype.com/en/nexus-repository-manager.html" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps nexus">Status</button>
             <button class="btn secondary" type="button" data-copy="docker compose logs -f nexus">Logs</button>
             <button class="btn secondary" type="button" data-copy="docker compose restart nexus">Restart</button>
           </div>
@@ -810,7 +835,7 @@ render_homepage_html() {
 </html>
 EOF
 
-  log "Rendered homepage/index.html with configured service URLs."
+  log "Rendered dashboard-web/index.html with configured service URLs."
 }
 
 show_next_steps() {
@@ -819,7 +844,7 @@ show_next_steps() {
 Stack started.
 
 Open these URLs:
-- Homepage: https://${HOMEPAGE_DOMAIN}
+- Dashboard: https://${DASHBOARD_DOMAIN}
 - Gitea:    ${GITEA_ROOT_URL}
 - TeamCity: https://${TEAMCITY_DOMAIN}
 - Nexus:    https://${NEXUS_DOMAIN}
@@ -884,7 +909,7 @@ prompt_macos_trust_local_cert() {
 
   if [[ ! -f "${cert_path}" ]]; then
     log "Caddy local root cert not found yet at ${cert_path}."
-    log "Open https://${HOMEPAGE_DOMAIN} once, then trust it manually if needed."
+    log "Open https://${DASHBOARD_DOMAIN} once, then trust it manually if needed."
     return
   fi
 
@@ -924,7 +949,7 @@ main() {
   apply_env_defaults
   render_postgres_init_sql
   render_teamcity_database_properties
-  render_homepage_html
+  render_dashboard_web_html
 
   log "Pulling container images..."
   $compose pull

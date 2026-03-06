@@ -2,6 +2,8 @@
 data/
 postgres/init/01-init-app-dbs.sql
 backups/
+dashboard-api/.gradle/
+dashboard-api/build/
 
 # macOS
 .DS_Store

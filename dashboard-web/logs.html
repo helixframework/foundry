@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Service Logs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path class="a" d="M3 18L12 6l9 12" />
+              <path class="b" d="M3 6h18" />
+            </svg>
+          </span>
+          <span>Helix</span>
+        </a>
+        <div class="top-actions">
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            <span class="switch-label" id="theme-toggle-label">Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="logs-wrap">
+        <div class="logs-top">
+          <h1 class="logs-title">Service <span class="title-accent">Logs</span></h1>
+          <a class="btn secondary" href="/">Back to Dashboard</a>
+        </div>
+
+        <div class="logs-controls">
+          <label class="logs-label" for="service-select">Service</label>
+          <select id="service-select">
+            <option value="gitea">Gitea</option>
+            <option value="teamcity">TeamCity</option>
+            <option value="nexus">Nexus</option>
+          </select>
+          <button class="btn secondary" type="button" id="reconnect-btn">Reconnect</button>
+          <button class="btn secondary" type="button" id="clear-btn">Clear</button>
+          <span class="logs-status" id="stream-status">Status: <strong>Connecting...</strong></span>
+        </div>
+
+        <pre class="logs-output" id="log-output"></pre>
+      </main>
+
+      <footer class="footer">
+        <span>&copy; 2026 Helix Framework</span>
+        <a class="github-link" href="https://github.com/helixframework/foundry" aria-label="Foundry on GitHub" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" role="img" focusable="false" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52 0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.53 7.53 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+          </svg>
+        </a>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        var key = "foundry-theme";
+        var root = document.documentElement;
+        var toggle = document.getElementById("theme-toggle");
+        var label = document.getElementById("theme-toggle-label");
+
+        function applyTheme(theme) {
+          root.setAttribute("data-theme", theme);
+          if (toggle) {
+            toggle.setAttribute("aria-checked", theme === "light" ? "true" : "false");
+            toggle.setAttribute("data-theme", theme);
+          }
+          if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
+        }
+
+        var stored = localStorage.getItem(key);
+        var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+        applyTheme(stored || preferred);
+
+        if (toggle) {
+          toggle.addEventListener("click", function () {
+            var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            applyTheme(next);
+            localStorage.setItem(key, next);
+          });
+        }
+
+        var serviceSelect = document.getElementById("service-select");
+        var reconnectBtn = document.getElementById("reconnect-btn");
+        var clearBtn = document.getElementById("clear-btn");
+        var output = document.getElementById("log-output");
+        var status = document.getElementById("stream-status");
+
+        var stream = null;
+        var reconnectTimer = null;
+        var maxLines = 2000;
+
+        function setStatus(text, warning) {
+          status.classList.toggle("warn", !!warning);
+          status.innerHTML = "Status: <strong>" + text + "</strong>";
+        }
+
+        function getSelectedService() {
+          return serviceSelect.value;
+        }
+
+        function setSelectedServiceFromQuery() {
+          var params = new URLSearchParams(window.location.search);
+          var requested = params.get("service");
+          if (!requested) return;
+
+          var hasOption = Array.prototype.some.call(serviceSelect.options, function (option) {
+            return option.value === requested;
+          });
+          if (hasOption) {
+            serviceSelect.value = requested;
+          }
+        }
+
+        function updateQuery(serviceId) {
+          var url = new URL(window.location.href);
+          url.searchParams.set("service", serviceId);
+          window.history.replaceState({}, "", url);
+        }
+
+        function appendLine(line) {
+          var autoScroll = output.scrollTop + output.clientHeight >= output.scrollHeight - 16;
+          output.textContent += line + "\n";
+
+          var lines = output.textContent.split("\n");
+          if (lines.length > maxLines) {
+            output.textContent = lines.slice(lines.length - maxLines).join("\n");
+          }
+
+          if (autoScroll) {
+            output.scrollTop = output.scrollHeight;
+          }
+        }
+
+        function closeStream() {
+          if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+          }
+
+          if (stream) {
+            stream.close();
+            stream = null;
+          }
+        }
+
+        function scheduleReconnect() {
+          if (reconnectTimer) return;
+          reconnectTimer = setTimeout(function () {
+            reconnectTimer = null;
+            connect();
+          }, 2000);
+        }
+
+        function connect() {
+          var serviceId = getSelectedService();
+          updateQuery(serviceId);
+          closeStream();
+          setStatus("Connecting...", false);
+
+          stream = new EventSource(
+            "/api/services/" + encodeURIComponent(serviceId) + "/logs/stream?tail=200"
+          );
+
+          stream.addEventListener("open", function () {
+            setStatus("Streaming", false);
+          });
+
+          stream.addEventListener("line", function (event) {
+            appendLine(event.data || "");
+          });
+
+          stream.addEventListener("error", function () {
+            setStatus("Disconnected - reconnecting", true);
+            closeStream();
+            scheduleReconnect();
+          });
+        }
+
+        serviceSelect.addEventListener("change", function () {
+          output.textContent = "";
+          connect();
+        });
+
+        reconnectBtn.addEventListener("click", function () {
+          connect();
+        });
+
+        clearBtn.addEventListener("click", function () {
+          output.textContent = "";
+        });
+
+        window.addEventListener("beforeunload", closeStream);
+
+        setSelectedServiceFromQuery();
+        connect();
+      })();
+    </script>
+  </body>
+</html>

@@ -1,16 +1,3 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Self-Hosted CI/CD</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
       :root {
         --bg: #050b14;
         --bg-end: #040911;
@@ -228,7 +215,7 @@
       }
 
       .hero {
-        padding: 44px 0 28px;
+        padding: 28px 0 16px;
         border-bottom: 1px solid var(--section-border);
         display: grid;
         grid-template-columns: 1.2fr 0.8fr;
@@ -272,7 +259,7 @@
       .hero-panel {
         border: 1px solid var(--line);
         background: var(--panel-bg);
-        padding: 14px;
+        padding: 10px;
       }
 
       .hero-panel h2 {
@@ -302,6 +289,14 @@
         font-size: 0.8rem;
       }
 
+      .health-state.ok {
+        color: #37dca2 !important;
+      }
+
+      .health-state.bad {
+        color: #ff7d7d !important;
+      }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -328,6 +323,16 @@
 
       .badge.ok::before {
         background: #37dca2;
+      }
+
+      .badge.warn {
+        color: #ffd7a8;
+        border-color: #b88749;
+        background: rgba(145, 92, 39, 0.28);
+      }
+
+      .badge.warn::before {
+        background: #ffb45b;
       }
 
       .services {
@@ -371,6 +376,26 @@
         color: var(--code);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.83rem;
+      }
+
+      .resource-usage {
+        margin: -2px 0 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .resource-usage span {
+        color: var(--code);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .resource-usage .resource-sep {
+        color: var(--muted);
+        font-family: var(--font-body);
       }
 
       .actions {
@@ -421,6 +446,13 @@
         font-size: 1.2rem;
       }
 
+      .activity-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
       .activity-list {
         margin: 12px 0 0;
         padding: 0;
@@ -436,6 +468,10 @@
         gap: 4px;
       }
 
+      .activity-list li.activity-empty {
+        border-top: 1px solid var(--subtle-line);
+      }
+
       .activity-list p {
         margin: 0;
         color: var(--muted);
@@ -446,6 +482,38 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         color: var(--code);
         font-size: 0.8rem;
+      }
+
+      .activity-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .alert-pill {
+        border: 1px solid var(--btn-secondary-border);
+        padding: 2px 6px;
+        font-size: 0.66rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .alert-pill.info {
+        color: #b9efd9;
+        border-color: #2f7a5e;
+        background: rgba(34, 103, 78, 0.3);
+      }
+
+      .alert-pill.warn {
+        color: #ffd7a8;
+        border-color: #b88749;
+        background: rgba(145, 92, 39, 0.28);
+      }
+
+      .alert-pill.error {
+        color: #ffb8b8;
+        border-color: #b95656;
+        background: rgba(124, 46, 46, 0.34);
       }
 
       .footer {
@@ -518,157 +586,92 @@
         .footer > :last-child {
           justify-self: start;
         }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <header class="topbar">
-        <a class="brand" href="https://localhost">
-          <span class="logo" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path class="a" d="M3 18L12 6l9 12" />
-              <path class="b" d="M3 6h18" />
-            </svg>
-          </span>
-          <span>Helix</span>
-        </a>
-        <div class="top-actions">
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
-            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
-            <span class="switch-label" id="theme-toggle-label">Dark</span>
-          </button>
-        </div>
-      </header>
 
-      <main class="hero">
-        <article>
-          <p class="eyebrow">Operations Dashboard</p>
-          <h1>Helix <span class="title-accent">Foundry</span></h1>
-        </article>
-        <aside class="hero-panel" aria-label="Environment Summary">
-          <h2>Environment Summary</h2>
-          <dl class="kv">
-            <dt>Environment</dt>
-            <dd>local</dd>
-            <dt>Homepage</dt>
-            <dd>https://localhost</dd>
-            <dt>Started</dt>
-            <dd>2026-03-05 15:06:38 CST</dd>
-          </dl>
-        </aside>
-      </main>
-
-      <section class="services" aria-label="Services">
-        <article class="card">
-          <div class="card-head">
-            <h2>Gitea</h2>
-            <span class="badge ok">Healthy</span>
-          </div>
-          <p class="meta">Git hosting and repository management</p>
-          <p class="url">https://gitea.localhost</p>
-          <div class="actions">
-            <a class="btn primary" href="https://gitea.localhost" target="_blank" rel="noopener noreferrer">Open</a>
-            <a class="btn secondary" href="https://docs.gitea.com/" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps gitea">Status</button>
-            <button class="btn secondary" type="button" data-copy="docker compose logs -f gitea">Logs</button>
-            <button class="btn secondary" type="button" data-copy="docker compose restart gitea">Restart</button>
-          </div>
-        </article>
-        <article class="card">
-          <div class="card-head">
-            <h2>TeamCity</h2>
-            <span class="badge ok">Healthy</span>
-          </div>
-          <p class="meta">Build server and pipeline orchestration</p>
-          <p class="url">https://teamcity.localhost</p>
-          <div class="actions">
-            <a class="btn primary" href="https://teamcity.localhost" target="_blank" rel="noopener noreferrer">Open</a>
-            <a class="btn secondary" href="https://www.jetbrains.com/help/teamcity/" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps teamcity-server">Status</button>
-            <button class="btn secondary" type="button" data-copy="docker compose logs -f teamcity-server">Logs</button>
-            <button class="btn secondary" type="button" data-copy="docker compose restart teamcity-server">Restart</button>
-          </div>
-        </article>
-        <article class="card">
-          <div class="card-head">
-            <h2>Nexus</h2>
-            <span class="badge ok">Healthy</span>
-          </div>
-          <p class="meta">Artifact and repository management</p>
-          <p class="url">https://nexus.localhost</p>
-          <div class="actions">
-            <a class="btn primary" href="https://nexus.localhost" target="_blank" rel="noopener noreferrer">Open</a>
-            <a class="btn secondary" href="https://help.sonatype.com/en/nexus-repository-manager.html" target="_blank" rel="noopener noreferrer">Docs</a>
-            <button class="btn secondary" type="button" data-copy="docker compose ps nexus">Status</button>
-            <button class="btn secondary" type="button" data-copy="docker compose logs -f nexus">Logs</button>
-            <button class="btn secondary" type="button" data-copy="docker compose restart nexus">Restart</button>
-          </div>
-        </article>
-      </section>
-
-      <section class="activity" aria-label="Recent Activity">
-        <h2>Recent Activity</h2>
-        <ul class="activity-list">
-          <li>
-            <p>Stack bootstrap completed and services are reachable.</p>
-            <span class="cmd">./install.sh</span>
-          </li>
-          <li>
-            <p>Check current container state and health.</p>
-            <span class="cmd">./scripts/status.sh</span>
-          </li>
-          <li>
-            <p>View combined logs for troubleshooting.</p>
-            <span class="cmd">./scripts/logs.sh</span>
-          </li>
-        </ul>
-      </section>
-
-      <footer class="footer">
-        <span>&copy; 2026 Helix Framework</span>
-        <a class="github-link" href="https://github.com/helixframework/foundry" aria-label="Foundry on GitHub" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 16 16" role="img" focusable="false" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52 0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.53 7.53 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
-          </svg>
-        </a>
-      </footer>
-    </div>
-    <script>
-      (function () {
-        var key = "foundry-theme";
-        var root = document.documentElement;
-        var toggle = document.getElementById("theme-toggle");
-        var label = document.getElementById("theme-toggle-label");
-        if (!toggle) return;
-
-        function applyTheme(theme) {
-          root.setAttribute("data-theme", theme);
-          toggle.setAttribute("aria-checked", theme === "light" ? "true" : "false");
-          toggle.setAttribute("data-theme", theme);
-          if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
+        .activity-head {
+          flex-direction: column;
+          align-items: flex-start;
         }
+      }
 
-        var stored = localStorage.getItem(key);
-        var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
-          ? "light"
-          : "dark";
-        applyTheme(stored || preferred);
+/* Logs Page */
+.logs-wrap {
+  width: 100%;
+  margin: 0;
+  padding: 24px 0 18px;
+}
 
-        toggle.addEventListener("click", function () {
-          var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-          applyTheme(next);
-          localStorage.setItem(key, next);
-        });
+.logs-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
 
-        var copyButtons = document.querySelectorAll("[data-copy]");
-        copyButtons.forEach(function (button) {
-          button.addEventListener("click", function () {
-            var command = button.getAttribute("data-copy");
-            navigator.clipboard.writeText(command);
-          });
-        });
-      })();
-    </script>
-  </body>
-</html>
+.logs-title {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
+  font-family: var(--font-display);
+}
+
+.logs-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+  padding: 10px;
+}
+
+.logs-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.logs-controls select {
+  background: var(--btn-secondary-bg);
+  color: var(--ink);
+  border: 1px solid var(--btn-secondary-border);
+  font-size: 0.8rem;
+  padding: 7px 10px;
+}
+
+.logs-status {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.logs-status strong {
+  color: #37dca2;
+}
+
+.logs-status.warn strong {
+  color: #ffb45b;
+}
+
+.logs-output {
+  margin: 12px 0 0;
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+  min-height: calc(100vh - 188px);
+  max-height: calc(100vh - 188px);
+  overflow: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (max-width: 720px) {
+  .logs-status {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .logs-output {
+    min-height: calc(100vh - 238px);
+    max-height: calc(100vh - 238px);
+  }
+}

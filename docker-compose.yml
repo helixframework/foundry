@@ -4,6 +4,8 @@ services:
     container_name: ${CADDY_CONTAINER_NAME:-cicd-caddy}
     restart: unless-stopped
     depends_on:
+      dashboard-api:
+        condition: service_started
       gitea:
         condition: service_healthy
       teamcity-server:
@@ -15,9 +17,34 @@ services:
       - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./homepage:/srv/homepage:ro
+      - ./dashboard-web:/srv/dashboard-web:ro
       - ./data/caddy/data:/data
       - ./data/caddy/config:/config
+
+  dashboard-api:
+    build:
+      context: ./dashboard-api
+    container_name: ${DASHBOARD_API_CONTAINER_NAME:-dashboard-api}
+    restart: unless-stopped
+    environment:
+      DASHBOARD_DOMAIN: ${DASHBOARD_DOMAIN:-localhost}
+      GITEA_DOMAIN: ${GITEA_DOMAIN:-gitea.localhost}
+      TEAMCITY_DOMAIN: ${TEAMCITY_DOMAIN:-teamcity.localhost}
+      NEXUS_DOMAIN: ${NEXUS_DOMAIN:-nexus.localhost}
+      FOUNDRY_ENVIRONMENT: ${FOUNDRY_ENVIRONMENT:-local}
+      GITEA_CONTAINER_NAME: ${GITEA_CONTAINER_NAME:-gitea}
+      TEAMCITY_SERVER_CONTAINER_NAME: ${TEAMCITY_SERVER_CONTAINER_NAME:-teamcity-server}
+      NEXUS_CONTAINER_NAME: ${NEXUS_CONTAINER_NAME:-nexus}
+      BACKUPS_DIR: /backups
+      BACKUP_STALE_HOURS: ${BACKUP_STALE_HOURS:-24}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backups:/backups:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
 
   postgres:
     image: postgres:16-alpine
