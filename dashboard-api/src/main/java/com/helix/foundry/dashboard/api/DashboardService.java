@@ -66,6 +66,12 @@ public class DashboardService {
   @Value("${BACKUP_STALE_HOURS:24}")
   private int backupStaleHours;
 
+  private final BackupSchedulerService backupSchedulerService;
+
+  public DashboardService(BackupSchedulerService backupSchedulerService) {
+    this.backupSchedulerService = backupSchedulerService;
+  }
+
   public DashboardResponse buildDashboard() {
     Map<String, ResourceUsage> usageByContainer =
         collectResourceUsage(
@@ -216,6 +222,10 @@ public class DashboardService {
   }
 
   private BackupStatus collectBackupStatus() {
+    if (backupSchedulerService.isBackupInProgress()) {
+      return new BackupStatus("", "", false, "Backing Up");
+    }
+
     Path root = Paths.get(backupsDir);
     if (!Files.isDirectory(root)) {
       return new BackupStatus("N/A", "N/A", true, "Unhealthy");

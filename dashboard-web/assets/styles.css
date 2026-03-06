@@ -327,6 +327,10 @@
         color: var(--bad-accent) !important;
       }
 
+      .health-state.warn {
+        color: var(--warn-accent) !important;
+      }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -408,6 +412,10 @@
         font-size: 0.83rem;
       }
 
+      .url-line {
+        display: block;
+      }
+
       .resource-usage {
         margin: -2px 0 0;
         color: var(--muted);
@@ -429,7 +437,8 @@
       }
 
       .actions {
-        margin-top: 4px;
+        margin-top: auto;
+        padding-top: 10px;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;

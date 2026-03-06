@@ -8,3 +8,6 @@ dashboard-api/build/
 # macOS
 .DS_Store
 ._*
+
+# Build Cache
+cache-data/

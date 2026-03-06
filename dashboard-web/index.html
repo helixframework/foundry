@@ -123,7 +123,10 @@
             <span class="badge ok" data-service-status>Healthy</span>
           </div>
           <p class="meta" data-service-description>Remote Gradle build cache server</p>
-          <p class="url" data-service-url>https://build-cache.localhost/cache/</p>
+          <p class="url" data-service-url>
+            <span class="url-line">https://build-cache.localhost/cache/</span>
+            <span class="url-line">http://localhost:5071/cache/</span>
+          </p>
           <p class="resource-usage">
             CPU <span data-service-cpu>--</span>
             <span class="resource-sep">|</span>
@@ -436,7 +439,17 @@
           if (description && service.description) description.textContent = service.description;
 
           var url = card.querySelector("[data-service-url]");
-          if (url && service.url) url.textContent = service.url;
+          if (url && service.url) {
+            if (service.id === "build-cache") {
+              url.innerHTML =
+                '<span class="url-line">' +
+                service.url +
+                "</span>" +
+                '<span class="url-line">http://localhost:5071/cache/</span>';
+            } else {
+              url.textContent = service.url;
+            }
+          }
 
           var open = card.querySelector("[data-service-open]");
           if (open && service.url) open.href = service.url;
@@ -463,6 +476,20 @@
         var dashboardRefreshMs = 15000;
         var dashboardRequestInFlight = false;
 
+        function normalizeServiceCardHeights() {
+          var cards = Array.prototype.slice.call(document.querySelectorAll(".services .card"));
+          if (!cards.length) return;
+          cards.forEach(function (card) {
+            card.style.minHeight = "";
+          });
+          var max = cards.reduce(function (acc, card) {
+            return Math.max(acc, card.offsetHeight || 0);
+          }, 0);
+          cards.forEach(function (card) {
+            card.style.minHeight = max + "px";
+          });
+        }
+
         function hydrateDashboard() {
           if (dashboardRequestInFlight) return;
           dashboardRequestInFlight = true;
@@ -484,17 +511,23 @@
               if (started && dashboard.startedAt) started.textContent = dashboard.startedAt;
 
               if (dashboard.backupStatus) {
-                if (backupTime && dashboard.backupStatus.latestBackupAt) {
-                  backupTime.textContent = dashboard.backupStatus.latestBackupAt;
+                var backupStatusMessage = dashboard.backupStatus.statusMessage || "";
+                var backupInProgress = backupStatusMessage === "Backing Up" || backupStatusMessage === "Backup In Progress";
+                if (backupTime) {
+                  backupTime.textContent = backupInProgress
+                    ? "--"
+                    : (dashboard.backupStatus.latestBackupAt || "--");
                 }
-                if (backupSize && dashboard.backupStatus.latestBackupSize) {
-                  backupSize.textContent = dashboard.backupStatus.latestBackupSize;
+                if (backupSize) {
+                  backupSize.textContent = backupInProgress
+                    ? "--"
+                    : (dashboard.backupStatus.latestBackupSize || "--");
                 }
                 if (backupHealth && dashboard.backupStatus.statusMessage) {
                   backupHealth.textContent = dashboard.backupStatus.statusMessage;
                   backupHealth.classList.add("health-state");
-                  backupHealth.classList.remove("ok", "bad");
-                  backupHealth.classList.add(dashboard.backupStatus.stale ? "bad" : "ok");
+                  backupHealth.classList.remove("ok", "bad", "warn");
+                  backupHealth.classList.add(backupInProgress ? "warn" : (dashboard.backupStatus.stale ? "bad" : "ok"));
                 }
 
                 if (backupStaleState === null) {
@@ -525,6 +558,7 @@
                   serviceHealth[service.id] = service.status;
                 });
                 dashboard.services.forEach(applyServiceCard);
+                normalizeServiceCardHeights();
               }
             })
             .catch(function () {
@@ -560,6 +594,9 @@
         setAlertsCollapsed(localStorage.getItem(alertsCollapsedKey) === "1");
         hydrateDashboard();
         setInterval(hydrateDashboard, dashboardRefreshMs);
+        window.addEventListener("resize", function () {
+          normalizeServiceCardHeights();
+        });
         document.addEventListener("visibilitychange", function () {
           if (document.visibilityState === "visible") {
             hydrateDashboard();
