@@ -192,6 +192,12 @@
         padding: 9px 12px;
       }
 
+      .top-link:hover {
+        border-color: var(--blue);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 55%, transparent);
+        background: color-mix(in srgb, var(--blue) 18%, var(--btn-secondary-bg));
+      }
+
       .theme-toggle {
         color: var(--ink);
         border: 1px solid var(--control-border);
@@ -477,6 +483,31 @@
         gap: 10px;
       }
 
+      .activity-head-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .alerts-toggle {
+        width: 34px;
+        height: 30px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .alerts-toggle-icon {
+        font-size: 0.9rem;
+        line-height: 1;
+        transition: transform 140ms ease;
+      }
+
+      .alerts-toggle.is-collapsed .alerts-toggle-icon {
+        transform: rotate(-90deg);
+      }
+
       .activity-list {
         margin: 12px 0 0;
         padding: 0;
@@ -512,6 +543,29 @@
         display: flex;
         align-items: center;
         gap: 8px;
+      }
+
+      .alerts-pager {
+        margin-top: 12px;
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .activity-list.is-collapsed,
+      .alerts-pager.is-collapsed {
+        display: none !important;
+      }
+
+      .alerts-pager .btn {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+      }
+
+      .alerts-pager .btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+        transform: none;
       }
 
       .alert-pill {
@@ -615,6 +669,11 @@
           flex-direction: column;
           align-items: flex-start;
         }
+
+        .activity-head-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
       }
 
 /* Logs Page */
@@ -640,18 +699,139 @@
 }
 
 .logs-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  display: grid;
+  gap: 10px;
   border: 1px solid var(--line);
   background: var(--panel-bg);
-  padding: 10px;
+  padding: 12px;
+}
+
+.logs-controls-toggle {
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.logs-controls-toggle-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: transform 140ms ease;
+}
+
+.logs-controls-toggle.is-collapsed .logs-controls-toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.logs-controls-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--subtle-line);
+  display: grid;
+  gap: 10px;
+}
+
+.logs-controls-body.is-collapsed {
+  display: none;
+}
+
+.logs-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 0;
+}
+
+.logs-row-tabs {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logs-row-tabs-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.logs-row-quick-actions {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.logs-controls.is-collapsed .logs-row-quick-actions {
+  display: inline-flex;
+}
+
+.logs-icon-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logs-icon-btn:hover {
+  border-color: var(--blue);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 55%, transparent);
+  background: color-mix(in srgb, var(--blue) 18%, var(--btn-secondary-bg));
+}
+
+.logs-icon {
+  font-size: 0.86rem;
+  line-height: 1;
+}
+
+.logs-icon-svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.logs-icon-fill {
+  fill: currentColor;
+  stroke: none;
+}
+
+.logs-row + .logs-row {
+  border-top: 1px solid var(--subtle-line);
+  margin-top: 2px;
+  padding-top: 12px;
+}
+
+.logs-field {
+  display: grid;
+  gap: 4px;
+}
+
+.logs-field-search {
+  flex: 1 1 260px;
+  min-width: 220px;
 }
 
 .logs-label {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.logs-input {
+  background: var(--btn-secondary-bg);
+  color: var(--ink);
+  border: 1px solid var(--btn-secondary-border);
+  font-size: 0.8rem;
+  padding: 7px 10px;
+  min-width: 180px;
 }
 
 .logs-controls select {
@@ -662,18 +842,95 @@
   padding: 7px 10px;
 }
 
+.logs-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.logs-tab {
+  padding: 6px 10px;
+  font-size: 0.7rem;
+}
+
+.logs-tab.is-active {
+  color: #eef7ff;
+  border-color: transparent;
+  background: linear-gradient(140deg, var(--blue), var(--teal));
+}
+
+.logs-checks {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logs-check {
+  color: var(--muted);
+  font-size: 0.74rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.logs-check input {
+  margin: 0;
+}
+
+.logs-row-actions {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logs-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .logs-status {
   margin-left: auto;
   font-size: 0.76rem;
   color: var(--muted);
+  border: 1px solid var(--subtle-line);
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .logs-status strong {
   color: var(--ok-accent);
 }
 
+.logs-status.is-streaming strong {
+  animation: logs-stream-pulse 1.2s ease-in-out infinite;
+}
+
+.logs-status.is-paused strong {
+  color: var(--bad-accent);
+  animation: none;
+}
+
 .logs-status.warn strong {
   color: var(--warn-accent);
+  animation: none;
+}
+
+@keyframes logs-stream-pulse {
+  0% {
+    opacity: 0.65;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 0 0 8px color-mix(in oklab, var(--ok-accent) 35%, transparent);
+  }
+  100% {
+    opacity: 0.65;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
 }
 
 .logs-output {
@@ -689,6 +946,24 @@
 }
 
 @media (max-width: 720px) {
+  .logs-input {
+    min-width: 100%;
+  }
+
+  .logs-field-search {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .logs-checks {
+    width: 100%;
+  }
+
+  .logs-row-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .logs-status {
     margin-left: 0;
     width: 100%;

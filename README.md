@@ -67,6 +67,7 @@ Edit `.env` to change ports, names, and root URL.
 Important variables:
 - `HTTP_PORT` / `HTTPS_PORT` (reverse proxy entry ports)
 - `DASHBOARD_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN` / `NEXUS_DOMAIN`
+- `FOUNDRY_VERSION` (shown in environment summary; default `dev`)
 - `BACKUP_STALE_HOURS` (dashboard warning threshold; default `24`)
 - `CADDY_TLS_MODE` (default `internal`)
 - `POSTGRES_PORT` (default `5432`)

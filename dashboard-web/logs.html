@@ -25,6 +25,8 @@
           <span>Helix</span>
         </a>
         <div class="top-actions">
+          <a class="top-link" href="/">Dashboard</a>
+          <a class="top-link" href="/logs.html">Logs</a>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span class="switch-label" id="theme-toggle-label">Dark</span>
@@ -35,19 +37,72 @@
       <main class="logs-wrap">
         <div class="logs-top">
           <h1 class="logs-title">Service <span class="title-accent">Logs</span></h1>
-          <a class="btn secondary" href="/">Back to Dashboard</a>
         </div>
 
         <div class="logs-controls">
-          <label class="logs-label" for="service-select">Service</label>
-          <select id="service-select">
-            <option value="gitea">Gitea</option>
-            <option value="teamcity">TeamCity</option>
-            <option value="nexus">Nexus</option>
-          </select>
-          <button class="btn secondary" type="button" id="reconnect-btn">Reconnect</button>
-          <button class="btn secondary" type="button" id="clear-btn">Clear</button>
-          <span class="logs-status" id="stream-status">Status: <strong>Connecting...</strong></span>
+          <div class="logs-row logs-row-tabs">
+            <div class="logs-tabs" role="tablist" aria-label="Service">
+              <button class="btn secondary logs-tab is-active" type="button" role="tab" data-service-tab="gitea">Gitea</button>
+              <button class="btn secondary logs-tab" type="button" role="tab" data-service-tab="teamcity">TeamCity</button>
+              <button class="btn secondary logs-tab" type="button" role="tab" data-service-tab="nexus">Nexus</button>
+            </div>
+            <div class="logs-row-tabs-right">
+              <div class="logs-row-quick-actions" id="logs-row-quick-actions" aria-label="Quick log actions">
+                <button class="btn secondary logs-icon-btn" type="button" id="pause-btn-compact" aria-label="Pause stream" title="Pause stream">
+                  <svg class="logs-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M9 6v12" />
+                    <path d="M15 6v12" />
+                  </svg>
+                </button>
+                <button class="btn secondary logs-icon-btn" type="button" id="reconnect-btn-compact" aria-label="Reconnect stream" title="Reconnect stream">
+                  <svg class="logs-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                    <path d="M21 3v6h-6" />
+                  </svg>
+                </button>
+                <button class="btn secondary logs-icon-btn" type="button" id="clear-btn-compact" aria-label="Clear output" title="Clear output">
+                  <svg class="logs-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M6 6l12 12" />
+                    <path d="M18 6L6 18" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                class="btn secondary logs-controls-toggle"
+                type="button"
+                id="logs-controls-toggle"
+                aria-expanded="true"
+                aria-label="Collapse controls"
+                title="Collapse controls"
+              >
+                <span class="logs-controls-toggle-icon" aria-hidden="true">▾</span>
+              </button>
+            </div>
+          </div>
+          <div class="logs-controls-body" id="logs-controls-body">
+
+          <div class="logs-row logs-row-filters">
+            <div class="logs-field logs-field-search">
+              <label class="logs-label" for="log-search">Search</label>
+              <input id="log-search" class="logs-input" type="text" placeholder="Filter logs" />
+            </div>
+            <div class="logs-checks">
+              <label class="logs-check"><input type="checkbox" id="regex-toggle" />Regex</label>
+              <label class="logs-check"><input type="checkbox" id="case-toggle" />Case</label>
+              <label class="logs-check"><input type="checkbox" id="matches-toggle" />Only matches</label>
+              <label class="logs-check"><input type="checkbox" id="autoscroll-toggle" checked />Auto-scroll</label>
+            </div>
+          </div>
+
+          <div class="logs-row logs-row-actions">
+            <div class="logs-actions">
+              <button class="btn secondary" type="button" id="pause-btn">Pause</button>
+              <button class="btn secondary" type="button" id="reconnect-btn">Reconnect</button>
+              <button class="btn secondary" type="button" id="clear-btn">Clear</button>
+            </div>
+            <span class="logs-status" id="stream-status">Status: <strong>Connecting...</strong></span>
+          </div>
+          </div>
         </div>
 
         <pre class="logs-output" id="log-output"></pre>
@@ -93,35 +148,135 @@
           });
         }
 
-        var serviceSelect = document.getElementById("service-select");
+        var logsControlsBody = document.getElementById("logs-controls-body");
+        var logsControlsToggle = document.getElementById("logs-controls-toggle");
+        var serviceTabs = document.querySelectorAll("[data-service-tab]");
+        var searchInput = document.getElementById("log-search");
+        var regexToggle = document.getElementById("regex-toggle");
+        var caseToggle = document.getElementById("case-toggle");
+        var matchesToggle = document.getElementById("matches-toggle");
+        var autoScrollToggle = document.getElementById("autoscroll-toggle");
+        var pauseBtn = document.getElementById("pause-btn");
+        var pauseBtnCompact = document.getElementById("pause-btn-compact");
         var reconnectBtn = document.getElementById("reconnect-btn");
+        var reconnectBtnCompact = document.getElementById("reconnect-btn-compact");
         var clearBtn = document.getElementById("clear-btn");
+        var clearBtnCompact = document.getElementById("clear-btn-compact");
         var output = document.getElementById("log-output");
         var status = document.getElementById("stream-status");
 
         var stream = null;
         var reconnectTimer = null;
         var maxLines = 2000;
+        var tailLines = 200;
+        var logLines = [];
+        var paused = false;
+        var streamConnected = false;
+        var filterRegex = null;
+        var currentService = "gitea";
+        var controlsCollapsedKey = "foundry-logs-controls-collapsed";
+
+        function pauseCompactIconMarkup(isPaused) {
+          if (isPaused) {
+            return (
+              '<svg class="logs-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+              '<path class="logs-icon-fill" d="M9 7l8 5-8 5z" />' +
+              "</svg>"
+            );
+          }
+          return (
+            '<svg class="logs-icon-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+            '<path d="M9 6v12" />' +
+            '<path d="M15 6v12" />' +
+            "</svg>"
+          );
+        }
 
         function setStatus(text, warning) {
           status.classList.toggle("warn", !!warning);
+          status.classList.toggle("is-streaming", text === "Streaming" && !warning);
+          status.classList.toggle("is-paused", text === "Paused");
           status.innerHTML = "Status: <strong>" + text + "</strong>";
         }
 
+        function setControlsCollapsed(collapsed) {
+          if (!logsControlsBody || !logsControlsToggle) return;
+          var controlsRoot = logsControlsBody.closest(".logs-controls");
+          if (controlsRoot) controlsRoot.classList.toggle("is-collapsed", collapsed);
+          logsControlsBody.classList.toggle("is-collapsed", collapsed);
+          logsControlsToggle.classList.toggle("is-collapsed", collapsed);
+          logsControlsToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          logsControlsToggle.setAttribute("aria-label", collapsed ? "Expand controls" : "Collapse controls");
+          logsControlsToggle.setAttribute("title", collapsed ? "Expand controls" : "Collapse controls");
+          localStorage.setItem(controlsCollapsedKey, collapsed ? "1" : "0");
+        }
+
+        if (logsControlsToggle) {
+          logsControlsToggle.addEventListener("click", function () {
+            var collapsed = logsControlsBody && logsControlsBody.classList.contains("is-collapsed");
+            setControlsCollapsed(!collapsed);
+          });
+        }
+
+        function updatePausedUi() {
+          if (pauseBtn) pauseBtn.textContent = paused ? "Resume" : "Pause";
+          if (pauseBtnCompact) {
+            pauseBtnCompact.setAttribute("aria-label", paused ? "Resume stream" : "Pause stream");
+            pauseBtnCompact.setAttribute("title", paused ? "Resume stream" : "Pause stream");
+            pauseBtnCompact.innerHTML = pauseCompactIconMarkup(paused);
+          }
+          if (paused) {
+            setStatus("Paused", false);
+          } else if (streamConnected) {
+            setStatus("Streaming", false);
+          }
+        }
+
+        function togglePause() {
+          paused = !paused;
+          updatePausedUi();
+          if (!paused) {
+            renderOutput();
+          }
+        }
+
+        function reconnectStream() {
+          connect();
+        }
+
+        function clearOutput() {
+          logLines = [];
+          renderOutput();
+        }
+
         function getSelectedService() {
-          return serviceSelect.value;
+          return currentService;
+        }
+
+        function setActiveService(serviceId) {
+          currentService = serviceId;
+          serviceTabs.forEach(function (tab) {
+            var active = tab.getAttribute("data-service-tab") === serviceId;
+            tab.classList.toggle("is-active", active);
+            tab.setAttribute("aria-selected", active ? "true" : "false");
+          });
         }
 
         function setSelectedServiceFromQuery() {
           var params = new URLSearchParams(window.location.search);
           var requested = params.get("service");
-          if (!requested) return;
+          if (!requested) {
+            setActiveService(currentService);
+            return;
+          }
 
-          var hasOption = Array.prototype.some.call(serviceSelect.options, function (option) {
-            return option.value === requested;
+          var hasTab = Array.prototype.some.call(serviceTabs, function (tab) {
+            return tab.getAttribute("data-service-tab") === requested;
           });
-          if (hasOption) {
-            serviceSelect.value = requested;
+          if (hasTab) {
+            setActiveService(requested);
+          } else {
+            setActiveService(currentService);
           }
         }
 
@@ -131,17 +286,62 @@
           window.history.replaceState({}, "", url);
         }
 
-        function appendLine(line) {
-          var autoScroll = output.scrollTop + output.clientHeight >= output.scrollHeight - 16;
-          output.textContent += line + "\n";
+        function currentAutoScroll() {
+          return !!(autoScrollToggle && autoScrollToggle.checked);
+        }
 
-          var lines = output.textContent.split("\n");
-          if (lines.length > maxLines) {
-            output.textContent = lines.slice(lines.length - maxLines).join("\n");
+        function buildFilterRegex() {
+          filterRegex = null;
+          if (!searchInput || !regexToggle || !regexToggle.checked) return true;
+          var pattern = searchInput.value || "";
+          if (!pattern) return true;
+          try {
+            filterRegex = new RegExp(pattern, caseToggle && caseToggle.checked ? "" : "i");
+            return true;
+          } catch (err) {
+            setStatus("Invalid regex", true);
+            return false;
+          }
+        }
+
+        function lineMatches(line) {
+          var query = searchInput ? searchInput.value : "";
+          if (!query) return true;
+          if (regexToggle && regexToggle.checked) {
+            return filterRegex ? filterRegex.test(line) : false;
           }
 
-          if (autoScroll) {
+          if (caseToggle && caseToggle.checked) {
+            return line.indexOf(query) >= 0;
+          }
+          return line.toLowerCase().indexOf(query.toLowerCase()) >= 0;
+        }
+
+        function renderOutput() {
+          if (!output) return;
+          if (!buildFilterRegex()) {
+            output.textContent = "";
+            return;
+          }
+
+          var stickBottom = output.scrollTop + output.clientHeight >= output.scrollHeight - 16;
+          var onlyMatches = matchesToggle && matchesToggle.checked;
+          var visible = onlyMatches ? logLines.filter(lineMatches) : logLines;
+          output.textContent = visible.join("\n");
+          if (output.textContent.length) output.textContent += "\n";
+
+          if (currentAutoScroll() && (stickBottom || !paused)) {
             output.scrollTop = output.scrollHeight;
+          }
+        }
+
+        function appendLine(line) {
+          logLines.push(line);
+          if (logLines.length > maxLines) {
+            logLines.splice(0, logLines.length - maxLines);
+          }
+          if (!paused) {
+            renderOutput();
           }
         }
 
@@ -170,13 +370,15 @@
           updateQuery(serviceId);
           closeStream();
           setStatus("Connecting...", false);
+          streamConnected = false;
 
           stream = new EventSource(
-            "/api/services/" + encodeURIComponent(serviceId) + "/logs/stream?tail=200"
+            "/api/services/" + encodeURIComponent(serviceId) + "/logs/stream?tail=" + tailLines
           );
 
           stream.addEventListener("open", function () {
-            setStatus("Streaming", false);
+            streamConnected = true;
+            if (!paused) setStatus("Streaming", false);
           });
 
           stream.addEventListener("line", function (event) {
@@ -184,28 +386,63 @@
           });
 
           stream.addEventListener("error", function () {
+            streamConnected = false;
             setStatus("Disconnected - reconnecting", true);
             closeStream();
             scheduleReconnect();
           });
         }
 
-        serviceSelect.addEventListener("change", function () {
-          output.textContent = "";
-          connect();
+        serviceTabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            var serviceId = tab.getAttribute("data-service-tab");
+            if (!serviceId || serviceId === currentService) return;
+            setActiveService(serviceId);
+            logLines = [];
+            renderOutput();
+            connect();
+          });
         });
 
-        reconnectBtn.addEventListener("click", function () {
-          connect();
-        });
+        if (searchInput) {
+          searchInput.addEventListener("input", renderOutput);
+        }
+        if (regexToggle) {
+          regexToggle.addEventListener("change", renderOutput);
+        }
+        if (caseToggle) {
+          caseToggle.addEventListener("change", renderOutput);
+        }
+        if (matchesToggle) {
+          matchesToggle.addEventListener("change", renderOutput);
+        }
+        if (autoScrollToggle) {
+          autoScrollToggle.addEventListener("change", renderOutput);
+        }
 
-        clearBtn.addEventListener("click", function () {
-          output.textContent = "";
-        });
+        if (pauseBtn) {
+          pauseBtn.addEventListener("click", togglePause);
+        }
+        if (pauseBtnCompact) {
+          pauseBtnCompact.addEventListener("click", togglePause);
+        }
+
+        reconnectBtn.addEventListener("click", reconnectStream);
+        if (reconnectBtnCompact) {
+          reconnectBtnCompact.addEventListener("click", reconnectStream);
+        }
+
+        clearBtn.addEventListener("click", clearOutput);
+        if (clearBtnCompact) {
+          clearBtnCompact.addEventListener("click", clearOutput);
+        }
 
         window.addEventListener("beforeunload", closeStream);
 
         setSelectedServiceFromQuery();
+        setControlsCollapsed(localStorage.getItem(controlsCollapsedKey) === "1");
+        updatePausedUi();
+        renderOutput();
         connect();
       })();
     </script>

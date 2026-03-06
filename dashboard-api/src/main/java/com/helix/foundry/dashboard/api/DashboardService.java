@@ -30,6 +30,9 @@ public class DashboardService {
   @Value("${FOUNDRY_ENVIRONMENT:local}")
   private String environment;
 
+  @Value("${FOUNDRY_VERSION:0.1.0}")
+  private String foundryVersion;
+
   @Value("${DASHBOARD_DOMAIN:localhost}")
   private String dashboardDomain;
 
@@ -96,6 +99,7 @@ public class DashboardService {
 
     return new DashboardResponse(
         environment,
+        foundryVersion,
         "https://" + dashboardDomain,
         STARTED_AT_FORMATTER.format(startedAt),
         collectBackupStatus(),

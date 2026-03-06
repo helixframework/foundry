@@ -93,6 +93,7 @@ apply_env_defaults() {
   : "${GITEA_DOMAIN:=gitea.localhost}"
   : "${TEAMCITY_DOMAIN:=teamcity.localhost}"
   : "${NEXUS_DOMAIN:=nexus.localhost}"
+  : "${FOUNDRY_VERSION:=0.1.0}"
   : "${CADDY_TLS_MODE:=internal}"
   : "${GITEA_ROOT_URL:=https://${GITEA_DOMAIN}/}"
 }
@@ -131,8 +132,7 @@ render_dashboard_web_html() {
     return
   fi
 
-  local dashboard_url gitea_url teamcity_url nexus_url started_at
-  dashboard_url="https://${DASHBOARD_DOMAIN}"
+  local gitea_url teamcity_url nexus_url started_at
   gitea_url="${GITEA_ROOT_URL%/}"
   teamcity_url="https://${TEAMCITY_DOMAIN}"
   nexus_url="https://${NEXUS_DOMAIN}"
@@ -320,6 +320,12 @@ render_dashboard_web_html() {
         border: 1px solid var(--control-border);
         background: var(--control-bg);
         padding: 9px 12px;
+      }
+
+      .top-link:hover {
+        border-color: var(--blue);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 55%, transparent);
+        background: color-mix(in srgb, var(--blue) 18%, var(--btn-secondary-bg));
       }
 
       .theme-toggle {
@@ -685,7 +691,7 @@ render_dashboard_web_html() {
   <body>
     <div class="wrap">
       <header class="topbar">
-        <a class="brand" href="${dashboard_url}">
+        <a class="brand" href="/">
           <span class="logo" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path class="a" d="M3 18L12 6l9 12" />
@@ -695,6 +701,8 @@ render_dashboard_web_html() {
           <span>Helix</span>
         </a>
         <div class="top-actions">
+          <a class="top-link" href="/">Dashboard</a>
+          <a class="top-link" href="/logs.html">Logs</a>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span class="switch-label" id="theme-toggle-label">Dark</span>
@@ -712,8 +720,8 @@ render_dashboard_web_html() {
           <dl class="kv">
             <dt>Environment</dt>
             <dd>local</dd>
-            <dt>Dashboard</dt>
-            <dd>${dashboard_url}</dd>
+            <dt>Version</dt>
+            <dd>${FOUNDRY_VERSION}</dd>
             <dt>Started</dt>
             <dd>${started_at}</dd>
           </dl>

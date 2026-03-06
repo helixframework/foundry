@@ -4,6 +4,7 @@ import java.util.List;
 
 public record DashboardResponse(
     String environment,
+    String foundryVersion,
     String dashboardUrl,
     String startedAt,
     BackupStatus backupStatus,
