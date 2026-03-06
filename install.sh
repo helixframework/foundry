@@ -575,6 +575,12 @@ render_dashboard_web_html() {
         background: var(--btn-secondary-bg);
       }
 
+      .btn.secondary:hover {
+        border-color: var(--blue);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 55%, transparent);
+        background: color-mix(in srgb, var(--blue) 18%, var(--btn-secondary-bg));
+      }
+
       .activity {
         border: 1px solid var(--line);
         background: var(--panel-bg);
