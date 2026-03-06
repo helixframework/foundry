@@ -27,6 +27,7 @@
         <div class="top-actions">
           <a class="top-link" href="/">Dashboard</a>
           <a class="top-link" href="/logs.html">Logs</a>
+          <a class="top-link" href="/backups.html">Backups</a>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span class="switch-label" id="theme-toggle-label">Dark</span>
@@ -34,7 +35,7 @@
         </div>
       </header>
 
-      <main class="logs-wrap">
+      <main class="page-wrap">
         <div class="logs-top">
           <h1 class="logs-title">Service <span class="title-accent">Logs</span></h1>
         </div>
@@ -45,6 +46,7 @@
               <button class="btn secondary logs-tab is-active" type="button" role="tab" data-service-tab="gitea">Gitea</button>
               <button class="btn secondary logs-tab" type="button" role="tab" data-service-tab="teamcity">TeamCity</button>
               <button class="btn secondary logs-tab" type="button" role="tab" data-service-tab="nexus">Nexus</button>
+              <button class="btn secondary logs-tab" type="button" role="tab" data-service-tab="build-cache">Build Cache</button>
             </div>
             <div class="logs-row-tabs-right">
               <div class="logs-row-quick-actions" id="logs-row-quick-actions" aria-label="Quick log actions">

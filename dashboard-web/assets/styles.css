@@ -682,8 +682,237 @@
         }
       }
 
+/* Backups Page */
+.backups-wrap {
+  width: 100%;
+  margin: 0;
+  padding: 0 0 18px;
+}
+
+.backups-head {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.backups-title {
+  margin: 0;
+}
+
+.backups-lead {
+  margin-bottom: 0;
+}
+
+.backups-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.backups-panel {
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+  padding: 14px;
+}
+
+.backups-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.backups-stat {
+  border: 1px solid var(--subtle-line);
+  background: color-mix(in srgb, var(--btn-secondary-bg) 76%, transparent);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.backups-stat-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+}
+
+.backups-stat-value {
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.backups-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.backups-status {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.backups-root {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--code);
+  font-size: 0.78rem;
+}
+
+.backups-progress {
+  margin: 0 0 12px;
+}
+
+.backups-progress.is-hidden {
+  display: none;
+}
+
+.backups-progress-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-bottom: 6px;
+}
+
+.backups-progress-track {
+  height: 8px;
+  border: 1px solid var(--btn-secondary-border);
+  background: var(--btn-secondary-bg);
+  overflow: hidden;
+}
+
+.backups-progress-bar {
+  width: 34%;
+  height: 100%;
+  background: linear-gradient(140deg, var(--blue), var(--teal));
+  animation: backups-progress-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes backups-progress-slide {
+  0% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.backups-table-wrap {
+  border: 1px solid var(--subtle-line);
+  overflow: auto;
+}
+
+.backups-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 690px;
+}
+
+.backups-table th,
+.backups-table td {
+  border-bottom: 1px solid var(--subtle-line);
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+
+.backups-table th {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.72rem;
+  background: color-mix(in srgb, var(--btn-secondary-bg) 85%, transparent);
+}
+
+.backups-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.backups-empty {
+  color: var(--muted) !important;
+  text-align: center !important;
+}
+
+.backups-pager {
+  margin-top: 12px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.backups-pager .btn {
+  padding: 6px 10px;
+  font-size: 0.7rem;
+}
+
+.backups-pager .btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+}
+
+.backups-delete-btn {
+  padding: 6px 10px;
+  font-size: 0.68rem;
+}
+
+.backups-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+}
+
+.backups-modal.is-hidden {
+  display: none;
+}
+
+.backups-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.backups-modal-dialog {
+  position: relative;
+  width: min(480px, calc(100% - 24px));
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+  padding: 14px;
+}
+
+.backups-modal-title {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.backups-modal-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.backups-modal-actions {
+  margin-top: 12px;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.backups-delete-confirm {
+  border-color: #a94f4f !important;
+  color: #ffd4d4 !important;
+  background: rgba(138, 44, 44, 0.3) !important;
+}
+
 /* Logs Page */
-.logs-wrap {
+.page-wrap {
   width: 100%;
   margin: 0;
   padding: 24px 0 18px;
@@ -988,6 +1217,23 @@
 }
 
 @media (max-width: 720px) {
+  .backups-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .backups-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .backups-actions {
+    width: 100%;
+  }
+
+  .backups-actions .btn {
+    flex: 1 1 auto;
+  }
+
   .logs-input {
     min-width: 100%;
   }

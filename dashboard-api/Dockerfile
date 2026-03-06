@@ -9,7 +9,7 @@ RUN gradle --no-daemon bootJar
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-RUN apk add --no-cache docker-cli
+RUN apk add --no-cache bash docker-cli docker-cli-compose tar
 
 COPY --from=build /app/build/libs/dashboard-api-*.jar /app/app.jar
 

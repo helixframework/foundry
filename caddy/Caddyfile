@@ -21,3 +21,8 @@
   tls {$CADDY_TLS_MODE:internal}
   reverse_proxy nexus:8081
 }
+
+{$BUILD_CACHE_DOMAIN:build-cache.localhost} {
+  tls {$CADDY_TLS_MODE:internal}
+  reverse_proxy build-cache:5071
+}

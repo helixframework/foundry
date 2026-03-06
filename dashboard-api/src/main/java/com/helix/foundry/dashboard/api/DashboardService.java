@@ -45,6 +45,9 @@ public class DashboardService {
   @Value("${NEXUS_DOMAIN:nexus.localhost}")
   private String nexusDomain;
 
+  @Value("${BUILD_CACHE_DOMAIN:build-cache.localhost}")
+  private String buildCacheDomain;
+
   @Value("${GITEA_CONTAINER_NAME:gitea}")
   private String giteaContainerName;
 
@@ -54,6 +57,9 @@ public class DashboardService {
   @Value("${NEXUS_CONTAINER_NAME:nexus}")
   private String nexusContainerName;
 
+  @Value("${BUILD_CACHE_CONTAINER_NAME:build-cache}")
+  private String buildCacheContainerName;
+
   @Value("${BACKUPS_DIR:/backups}")
   private String backupsDir;
 
@@ -62,7 +68,8 @@ public class DashboardService {
 
   public DashboardResponse buildDashboard() {
     Map<String, ResourceUsage> usageByContainer =
-        collectResourceUsage(List.of(giteaContainerName, teamcityContainerName, nexusContainerName));
+        collectResourceUsage(
+            List.of(giteaContainerName, teamcityContainerName, nexusContainerName, buildCacheContainerName));
 
     ServiceCard gitea =
         serviceCard(
@@ -97,13 +104,24 @@ public class DashboardService {
             nexusContainerName,
             usageByContainer.getOrDefault(nexusContainerName, unavailableResourceUsage()));
 
+    ServiceCard buildCache =
+        serviceCard(
+            "build-cache",
+            "Build Cache",
+            "Remote Gradle build cache server",
+            "https://" + buildCacheDomain + "/cache/",
+            "https://github.com/helixframework/build-cache",
+            "http://build-cache:5071/cache/",
+            buildCacheContainerName,
+            usageByContainer.getOrDefault(buildCacheContainerName, unavailableResourceUsage()));
+
     return new DashboardResponse(
         environment,
         foundryVersion,
         "https://" + dashboardDomain,
         STARTED_AT_FORMATTER.format(startedAt),
         collectBackupStatus(),
-        List.of(gitea, teamcity, nexus));
+        List.of(gitea, teamcity, nexus, buildCache));
   }
 
   private ServiceCard serviceCard(

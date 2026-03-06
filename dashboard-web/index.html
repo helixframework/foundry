@@ -27,6 +27,7 @@
         <div class="top-actions">
           <a class="top-link" href="/">Dashboard</a>
           <a class="top-link" href="/logs.html">Logs</a>
+          <a class="top-link" href="/backups.html">Backups</a>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span class="switch-label" id="theme-toggle-label">Dark</span>
@@ -114,6 +115,25 @@
             <a class="btn secondary" data-service-docs href="https://help.sonatype.com/en/nexus-repository-manager.html" target="_blank" rel="noopener noreferrer">Docs</a>
             <button class="btn secondary" type="button" data-open-logs>Logs</button>
             <button class="btn secondary" type="button" data-service-cmd-restart data-copy="docker compose restart nexus">Restart</button>
+          </div>
+        </article>
+        <article class="card" data-service-id="build-cache">
+          <div class="card-head">
+            <h2>Build Cache</h2>
+            <span class="badge ok" data-service-status>Healthy</span>
+          </div>
+          <p class="meta" data-service-description>Remote Gradle build cache server</p>
+          <p class="url" data-service-url>https://build-cache.localhost/cache/</p>
+          <p class="resource-usage">
+            CPU <span data-service-cpu>--</span>
+            <span class="resource-sep">|</span>
+            Memory <span data-service-memory>--</span>
+          </p>
+          <div class="actions">
+            <a class="btn primary" data-service-open href="https://build-cache.localhost/cache/" target="_blank" rel="noopener noreferrer">Open</a>
+            <a class="btn secondary" data-service-docs href="https://github.com/helixframework/build-cache" target="_blank" rel="noopener noreferrer">Docs</a>
+            <button class="btn secondary" type="button" data-open-logs>Logs</button>
+            <button class="btn secondary" type="button" data-service-cmd-restart data-copy="docker compose restart build-cache">Restart</button>
           </div>
         </article>
       </section>
@@ -518,7 +538,7 @@
             });
         }
 
-        ["gitea", "teamcity", "nexus"].forEach(connectServiceStream);
+        ["gitea", "teamcity", "nexus", "build-cache"].forEach(connectServiceStream);
         if (alertsToggle) {
           alertsToggle.addEventListener("click", function () {
             var collapsed = alertsList && alertsList.classList.contains("is-collapsed");

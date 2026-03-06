@@ -10,6 +10,7 @@ This repository provides a local/self-hosted CI/CD baseline using Docker contain
 - **TeamCity Server** for build orchestration
 - **TeamCity Agent** for build execution
 - **Nexus Repository** for artifact hosting and proxying
+- **Gradle Build Cache** for remote build caching
 
 All components run with Docker Compose, and setup is driven by a single executable:
 
@@ -27,6 +28,8 @@ All components run with Docker Compose, and setup is driven by a single executab
 - Helper scripts in `./scripts`
 - Dashboard API endpoint: `https://localhost/api/dashboard`
 - Live logs page: `https://localhost/logs.html?service=gitea`
+- Backups page: `https://localhost/backups.html`
+- Gradle build cache endpoint: `https://build-cache.localhost/cache/`
 
 ## Prerequisites
 
@@ -46,6 +49,7 @@ All components run with Docker Compose, and setup is driven by a single executab
 - Gitea: [https://gitea.localhost](https://gitea.localhost)
 - TeamCity: [https://teamcity.localhost](https://teamcity.localhost)
 - Nexus: [https://nexus.localhost](https://nexus.localhost)
+- Build Cache: [https://build-cache.localhost/cache/](https://build-cache.localhost/cache/)
 
 3. Complete first-run web setup:
 - In Gitea, create your user/org/repos.
@@ -66,9 +70,11 @@ Edit `.env` to change ports, names, and root URL.
 
 Important variables:
 - `HTTP_PORT` / `HTTPS_PORT` (reverse proxy entry ports)
-- `DASHBOARD_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN` / `NEXUS_DOMAIN`
+- `DASHBOARD_DOMAIN` / `GITEA_DOMAIN` / `TEAMCITY_DOMAIN` / `NEXUS_DOMAIN` / `BUILD_CACHE_DOMAIN`
 - `FOUNDRY_VERSION` (shown in environment summary; default `dev`)
 - `BACKUP_STALE_HOURS` (dashboard warning threshold; default `24`)
+- `BACKUP_SCHEDULE_ENABLED` (enable scheduled backups from `dashboard-api`; default `true`)
+- `BACKUP_CRON` (Spring cron expression with 6 fields; default `0 0 2 * * *`)
 - `CADDY_TLS_MODE` (default `internal`)
 - `POSTGRES_PORT` (default `5432`)
 - `POSTGRES_ADMIN_USER` / `POSTGRES_ADMIN_PASSWORD`
@@ -77,7 +83,9 @@ Important variables:
 - `GITEA_SSH_PORT` (default `2222`)
 - `TEAMCITY_HTTP_PORT` (default `8111`)
 - `NEXUS_HTTP_PORT` (default `8081`)
+- `BUILD_CACHE_PORT` (default `5071`)
 - `GITEA_ROOT_URL` (default `https://gitea.localhost/`)
+- `GRADLE_CACHE_STORAGE_DIR` (default `/data/cache`)
 
 TLS note:
 - Default mode uses `CADDY_TLS_MODE=internal` so certificates are issued by Caddy's internal CA.
@@ -154,6 +162,9 @@ Create a backup:
 ```bash
 ./scripts/backup.sh
 ```
+
+Automated backups are also scheduled by the `dashboard-api` service when `BACKUP_SCHEDULE_ENABLED=true`.
+The schedule is controlled by `BACKUP_CRON` (default: daily at `02:00` server time).
 
 This creates a timestamped folder in `./backups/` containing:
 - PostgreSQL dumps for Gitea and TeamCity

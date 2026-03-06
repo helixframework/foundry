@@ -75,7 +75,7 @@ main() {
   $compose exec -T postgres pg_dump -U "$POSTGRES_ADMIN_USER" -d "$TEAMCITY_DB_NAME" -Fc > "${pg_dir}/teamcity.dump"
 
   log "Archiving service data files..."
-  tar -czf "${backup_dir}/files.tar.gz" \
+  tar --warning=no-file-changed --ignore-failed-read -czf "${backup_dir}/files.tar.gz" \
     data/caddy \
     data/gitea \
     data/nexus \

@@ -14,11 +14,15 @@ public class ServiceContainerResolver {
   @Value("${NEXUS_CONTAINER_NAME:nexus}")
   private String nexusContainerName;
 
+  @Value("${BUILD_CACHE_CONTAINER_NAME:build-cache}")
+  private String buildCacheContainerName;
+
   public String resolveContainerName(String serviceId) {
     return switch (serviceId) {
       case "gitea" -> giteaContainerName;
       case "teamcity" -> teamcityContainerName;
       case "nexus" -> nexusContainerName;
+      case "build-cache" -> buildCacheContainerName;
       default -> null;
     };
   }

@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path class="a" d="M3 18L12 6l9 12" />
+              <path class="b" d="M3 6h18" />
+            </svg>
+          </span>
+          <span>Helix</span>
+        </a>
+        <div class="top-actions">
+          <a class="top-link" href="/">Dashboard</a>
+          <a class="top-link" href="/logs.html">Logs</a>
+          <a class="top-link" href="/backups.html">Backups</a>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color mode">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            <span class="switch-label" id="theme-toggle-label">Dark</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="page-wrap backups-wrap">
+        <section class="backups-head">
+          <div>
+            <h1 class="logs-title">Backup <span class="title-accent">History</span></h1>
+            <p class="lead backups-lead">Browse captured backups and run an immediate snapshot when needed.</p>
+          </div>
+          <div class="backups-actions">
+            <button class="btn secondary" type="button" id="refresh-backups">Refresh</button>
+            <button class="btn primary" type="button" id="run-backup-now">Run Backup Now</button>
+          </div>
+        </section>
+
+        <section class="backups-panel" aria-label="Backups">
+          <div class="backups-stats" aria-label="Backup stats">
+            <div class="backups-stat">
+              <span class="backups-stat-label">Completed</span>
+              <span class="backups-stat-value" id="stats-total">--</span>
+            </div>
+            <div class="backups-stat">
+              <span class="backups-stat-label">Latest Size</span>
+              <span class="backups-stat-value" id="stats-latest-size">--</span>
+            </div>
+            <div class="backups-stat">
+              <span class="backups-stat-label">Latest Backup</span>
+              <span class="backups-stat-value" id="stats-latest-time">--</span>
+            </div>
+          </div>
+          <div class="backups-meta">
+            <span class="backups-status" id="backup-status">Loading backups...</span>
+          </div>
+          <div class="backups-progress is-hidden" id="backup-progress-wrap" aria-live="polite">
+            <div class="backups-progress-label" id="backup-progress-label">Backup in progress...</div>
+            <div class="backups-progress-track">
+              <div class="backups-progress-bar"></div>
+            </div>
+          </div>
+          <div class="backups-table-wrap">
+            <table class="backups-table">
+              <thead>
+                <tr>
+                  <th>Backup ID</th>
+                  <th>Created</th>
+                  <th>Files</th>
+                  <th>Size</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="backups-body">
+                <tr>
+                  <td colspan="5" class="backups-empty">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="backups-pager" id="backups-pager">
+            <button class="btn secondary" type="button" id="backups-prev">Prev</button>
+            <span class="cmd" id="backups-page">Page 1 / 1</span>
+            <button class="btn secondary" type="button" id="backups-next">Next</button>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>&copy; 2026 Helix Framework</span>
+        <a class="github-link" href="https://github.com/helixframework/foundry" aria-label="Foundry on GitHub" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 16 16" role="img" focusable="false" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52 0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.53 7.53 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
+          </svg>
+        </a>
+      </footer>
+    </div>
+    <div class="backups-modal is-hidden" id="delete-backup-modal" aria-hidden="true">
+      <div class="backups-modal-backdrop" data-modal-close></div>
+      <div class="backups-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-backup-title">
+        <h2 class="backups-modal-title" id="delete-backup-title">Delete Backup</h2>
+        <p class="backups-modal-text" id="delete-backup-text">This action cannot be undone.</p>
+        <div class="backups-modal-actions">
+          <button class="btn secondary" type="button" id="delete-backup-cancel">Cancel</button>
+          <button class="btn secondary backups-delete-confirm" type="button" id="delete-backup-confirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var key = "foundry-theme";
+        var root = document.documentElement;
+        var toggle = document.getElementById("theme-toggle");
+        var label = document.getElementById("theme-toggle-label");
+        var backupsBody = document.getElementById("backups-body");
+        var backupStatus = document.getElementById("backup-status");
+        var statsTotal = document.getElementById("stats-total");
+        var statsLatestSize = document.getElementById("stats-latest-size");
+        var statsLatestTime = document.getElementById("stats-latest-time");
+        var backupProgressWrap = document.getElementById("backup-progress-wrap");
+        var backupProgressLabel = document.getElementById("backup-progress-label");
+        var backupsPager = document.getElementById("backups-pager");
+        var backupsPrev = document.getElementById("backups-prev");
+        var backupsNext = document.getElementById("backups-next");
+        var backupsPage = document.getElementById("backups-page");
+        var refreshButton = document.getElementById("refresh-backups");
+        var runNowButton = document.getElementById("run-backup-now");
+        var deleteBackupModal = document.getElementById("delete-backup-modal");
+        var deleteBackupText = document.getElementById("delete-backup-text");
+        var deleteBackupCancel = document.getElementById("delete-backup-cancel");
+        var deleteBackupConfirm = document.getElementById("delete-backup-confirm");
+        var requestInFlight = false;
+        var backupInProgress = false;
+        var allBackups = [];
+        var currentPage = 1;
+        var pageSize = 10;
+        var deletingBackupId = null;
+        var pendingDeleteBackupId = null;
+
+        function applyTheme(theme) {
+          root.setAttribute("data-theme", theme);
+          toggle.setAttribute("aria-checked", theme === "light" ? "true" : "false");
+          toggle.setAttribute("data-theme", theme);
+          if (label) label.textContent = theme === "dark" ? "Dark" : "Light";
+        }
+
+        function setStatus(message) {
+          if (backupStatus) backupStatus.textContent = message;
+        }
+
+        function sanitizeStatus(message) {
+          return String(message || "")
+            .replace("Incomplete backup runs are hidden.", "")
+            .replace(/\s{2,}/g, " ")
+            .trim();
+        }
+
+        function setStats(total, latestSize, latestTime) {
+          if (statsTotal) statsTotal.textContent = total;
+          if (statsLatestSize) statsLatestSize.textContent = latestSize;
+          if (statsLatestTime) statsLatestTime.textContent = latestTime;
+        }
+
+        function renderEmpty(message) {
+          if (!backupsBody) return;
+          backupsBody.innerHTML = "";
+          var row = document.createElement("tr");
+          var cell = document.createElement("td");
+          cell.colSpan = 5;
+          cell.className = "backups-empty";
+          cell.textContent = message;
+          row.appendChild(cell);
+          backupsBody.appendChild(row);
+          if (backupsPager) backupsPager.style.display = "none";
+        }
+
+        function renderBackups(response) {
+          if (!backupsBody) return;
+          backupsBody.innerHTML = "";
+          if (!response.available) {
+            renderEmpty(response.statusMessage || "Backups are unavailable.");
+            return;
+          }
+          if (!Array.isArray(response.backups) || response.backups.length === 0) {
+            renderEmpty("No backups found.");
+            return;
+          }
+
+          allBackups = response.backups.slice();
+          var totalPages = Math.max(1, Math.ceil(allBackups.length / pageSize));
+          if (currentPage > totalPages) currentPage = totalPages;
+          if (currentPage < 1) currentPage = 1;
+
+          var start = (currentPage - 1) * pageSize;
+          var pageBackups = allBackups.slice(start, start + pageSize);
+
+          pageBackups.forEach(function (backup) {
+            var row = document.createElement("tr");
+            var id = document.createElement("td");
+            id.className = "cmd";
+            id.textContent = backup.id || "--";
+            row.appendChild(id);
+
+            var created = document.createElement("td");
+            created.textContent = backup.createdAt || "--";
+            row.appendChild(created);
+
+            var files = document.createElement("td");
+            files.textContent = typeof backup.fileCount === "number" ? String(backup.fileCount) : "--";
+            row.appendChild(files);
+
+            var size = document.createElement("td");
+            size.textContent = backup.sizeLabel || "--";
+            row.appendChild(size);
+
+            var actions = document.createElement("td");
+            var deleteButton = document.createElement("button");
+            deleteButton.className = "btn secondary backups-delete-btn";
+            deleteButton.type = "button";
+            deleteButton.setAttribute("data-delete-backup", backup.id || "");
+            deleteButton.textContent = deletingBackupId === backup.id ? "Deleting..." : "Delete";
+            deleteButton.disabled = deletingBackupId === backup.id || backupInProgress;
+            actions.appendChild(deleteButton);
+            row.appendChild(actions);
+
+            backupsBody.appendChild(row);
+          });
+
+          if (backupsPager) backupsPager.style.display = "flex";
+          if (backupsPage) backupsPage.textContent = "Page " + currentPage + " / " + totalPages;
+          if (backupsPrev) backupsPrev.disabled = currentPage <= 1;
+          if (backupsNext) backupsNext.disabled = currentPage >= totalPages;
+        }
+
+        function updateProgressUi(inProgress) {
+          backupInProgress = !!inProgress;
+          if (backupProgressWrap) {
+            backupProgressWrap.classList.toggle("is-hidden", !backupInProgress);
+          }
+          if (backupProgressLabel) {
+            backupProgressLabel.textContent = backupInProgress ? "Backup in progress..." : "Idle";
+          }
+          if (runNowButton) {
+            runNowButton.disabled = backupInProgress;
+            runNowButton.textContent = backupInProgress ? "Backup Running..." : "Run Backup Now";
+          }
+        }
+
+        function fetchBackups() {
+          if (requestInFlight) return;
+          requestInFlight = true;
+          setStatus("Loading backups...");
+
+          fetch("/api/backups?limit=100", { headers: { Accept: "application/json" } })
+            .then(function (response) {
+              if (!response.ok) throw new Error("backups request failed");
+              return response.json();
+            })
+            .then(function (data) {
+              var count = typeof data.totalBackups === "number" ? data.totalBackups : 0;
+              var latest = Array.isArray(data.backups) && data.backups.length ? data.backups[0] : null;
+              setStats(
+                String(count),
+                latest && latest.sizeLabel ? latest.sizeLabel : "--",
+                latest && latest.createdAt ? latest.createdAt : "--"
+              );
+              var statusMessage = sanitizeStatus(data.statusMessage || "Backups loaded.");
+              setStatus(statusMessage + (data.backupInProgress ? " Backup is running." : ""));
+              updateProgressUi(!!data.backupInProgress);
+              renderBackups(data);
+            })
+            .catch(function () {
+              setStatus("Unable to load backups.");
+              setStats("--", "--", "--");
+              updateProgressUi(false);
+              renderEmpty("Unable to load backups.");
+            })
+            .finally(function () {
+              requestInFlight = false;
+            });
+        }
+
+        function runBackupNow() {
+          if (!runNowButton) return;
+          runNowButton.disabled = true;
+          setStatus("Starting backup...");
+
+          fetch("/api/backups/run", {
+            method: "POST",
+            headers: { Accept: "application/json" }
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error("run backup failed");
+              return response.json();
+            })
+            .then(function (data) {
+              setStatus(data && data.message ? data.message : "Backup request sent.");
+              updateProgressUi(true);
+              window.setTimeout(fetchBackups, 1000);
+            })
+            .catch(function () {
+              setStatus("Failed to start backup.");
+            })
+            .finally(function () {
+              runNowButton.disabled = false;
+            });
+        }
+
+        function openDeleteModal(backupId) {
+          if (!backupId) return;
+          pendingDeleteBackupId = backupId;
+          if (deleteBackupText) {
+            deleteBackupText.textContent = "Delete backup " + backupId + "? This action cannot be undone.";
+          }
+          if (deleteBackupModal) {
+            deleteBackupModal.classList.remove("is-hidden");
+            deleteBackupModal.setAttribute("aria-hidden", "false");
+          }
+        }
+
+        function closeDeleteModal() {
+          pendingDeleteBackupId = null;
+          if (deleteBackupModal) {
+            deleteBackupModal.classList.add("is-hidden");
+            deleteBackupModal.setAttribute("aria-hidden", "true");
+          }
+        }
+
+        function deleteBackup(backupId) {
+          if (!backupId) return;
+
+          deletingBackupId = backupId;
+          setStatus("Deleting backup " + backupId + "...");
+          renderBackups({ available: true, backups: allBackups });
+
+          fetch("/api/backups/" + encodeURIComponent(backupId), {
+            method: "DELETE",
+            headers: { Accept: "application/json" }
+          })
+            .then(function (response) {
+              if (!response.ok) throw new Error("delete backup failed");
+              return response.json();
+            })
+            .then(function (data) {
+              setStatus(data && data.message ? data.message : "Backup deleted.");
+              fetchBackups();
+            })
+            .catch(function () {
+              setStatus("Failed to delete backup.");
+              fetchBackups();
+            })
+            .finally(function () {
+              deletingBackupId = null;
+            });
+        }
+
+        var stored = localStorage.getItem(key);
+        var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark";
+        applyTheme(stored || preferred);
+
+        toggle.addEventListener("click", function () {
+          var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+          applyTheme(next);
+          localStorage.setItem(key, next);
+        });
+
+        if (refreshButton) refreshButton.addEventListener("click", fetchBackups);
+        if (runNowButton) runNowButton.addEventListener("click", runBackupNow);
+        if (backupsBody) {
+          backupsBody.addEventListener("click", function (event) {
+            var target = event.target;
+            if (!(target instanceof Element)) return;
+            var button = target.closest("[data-delete-backup]");
+            if (!button) return;
+            var backupId = button.getAttribute("data-delete-backup");
+            openDeleteModal(backupId);
+          });
+        }
+        if (deleteBackupModal) {
+          deleteBackupModal.addEventListener("click", function (event) {
+            var target = event.target;
+            if (!(target instanceof Element)) return;
+            if (target.hasAttribute("data-modal-close")) {
+              closeDeleteModal();
+            }
+          });
+        }
+        if (deleteBackupCancel) {
+          deleteBackupCancel.addEventListener("click", function () {
+            closeDeleteModal();
+          });
+        }
+        if (deleteBackupConfirm) {
+          deleteBackupConfirm.addEventListener("click", function () {
+            if (!pendingDeleteBackupId) {
+              closeDeleteModal();
+              return;
+            }
+            var backupId = pendingDeleteBackupId;
+            closeDeleteModal();
+            deleteBackup(backupId);
+          });
+        }
+        window.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && deleteBackupModal && !deleteBackupModal.classList.contains("is-hidden")) {
+            closeDeleteModal();
+          }
+        });
+        if (backupsPrev) {
+          backupsPrev.addEventListener("click", function () {
+            if (currentPage <= 1) return;
+            currentPage -= 1;
+            renderBackups({ available: true, backups: allBackups });
+          });
+        }
+        if (backupsNext) {
+          backupsNext.addEventListener("click", function () {
+            var totalPages = Math.max(1, Math.ceil(allBackups.length / pageSize));
+            if (currentPage >= totalPages) return;
+            currentPage += 1;
+            renderBackups({ available: true, backups: allBackups });
+          });
+        }
+
+        fetchBackups();
+        window.setInterval(function () {
+          fetchBackups();
+        }, 5000);
+      })();
+    </script>
+  </body>
+</html>
