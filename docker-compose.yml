@@ -165,8 +165,6 @@ services:
     restart: unless-stopped
     environment:
       GRADLE_CACHE_STORAGE_DIR: ${GRADLE_CACHE_STORAGE_DIR:-/data/cache}
-    ports:
-      - "${BUILD_CACHE_PORT:-5071}:5071"
     volumes:
       - ./cache-data:/data/cache
 
