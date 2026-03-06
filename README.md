@@ -1,4 +1,4 @@
-# Self-Hosted CI/CD Scaffold (Gitea + TeamCity + TLS Proxy)
+# Self-Hosted CI/CD Platform
 
 This repository provides a local/self-hosted CI/CD baseline using Docker containers:
 
