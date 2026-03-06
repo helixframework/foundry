@@ -873,6 +873,42 @@
   gap: 10px;
 }
 
+.logs-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.logs-severity-chip {
+  padding: 6px 9px;
+  font-size: 0.68rem;
+}
+
+.logs-severity-chip.is-active {
+  color: #eef7ff;
+  border-color: transparent;
+  background: linear-gradient(140deg, var(--blue), var(--teal));
+}
+
+.logs-severity-count {
+  margin-left: 6px;
+  border: 1px solid var(--btn-secondary-border);
+  padding: 1px 4px;
+  font-size: 0.64rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 6ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.logs-severity-chip.is-active .logs-severity-count {
+  border-color: rgba(238, 247, 255, 0.32);
+  color: #eef7ff;
+}
+
 .logs-check {
   color: var(--muted);
   font-size: 0.74rem;

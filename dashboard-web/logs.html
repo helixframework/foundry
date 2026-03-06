@@ -94,6 +94,23 @@
             </div>
           </div>
 
+          <div class="logs-row logs-row-severity">
+            <div class="logs-severity" role="group" aria-label="Severity filter">
+              <button class="btn secondary logs-severity-chip is-active" type="button" data-severity-filter="all">
+                All <span class="logs-severity-count" data-severity-count="all">0</span>
+              </button>
+              <button class="btn secondary logs-severity-chip" type="button" data-severity-filter="error">
+                Error <span class="logs-severity-count" data-severity-count="error">0</span>
+              </button>
+              <button class="btn secondary logs-severity-chip" type="button" data-severity-filter="warn">
+                Warn <span class="logs-severity-count" data-severity-count="warn">0</span>
+              </button>
+              <button class="btn secondary logs-severity-chip" type="button" data-severity-filter="info">
+                Info <span class="logs-severity-count" data-severity-count="info">0</span>
+              </button>
+            </div>
+          </div>
+
           <div class="logs-row logs-row-actions">
             <div class="logs-actions">
               <button class="btn secondary" type="button" id="pause-btn">Pause</button>
@@ -156,6 +173,11 @@
         var caseToggle = document.getElementById("case-toggle");
         var matchesToggle = document.getElementById("matches-toggle");
         var autoScrollToggle = document.getElementById("autoscroll-toggle");
+        var severityButtons = document.querySelectorAll("[data-severity-filter]");
+        var severityCountAll = document.querySelector('[data-severity-count="all"]');
+        var severityCountError = document.querySelector('[data-severity-count="error"]');
+        var severityCountWarn = document.querySelector('[data-severity-count="warn"]');
+        var severityCountInfo = document.querySelector('[data-severity-count="info"]');
         var pauseBtn = document.getElementById("pause-btn");
         var pauseBtnCompact = document.getElementById("pause-btn-compact");
         var reconnectBtn = document.getElementById("reconnect-btn");
@@ -175,6 +197,7 @@
         var filterRegex = null;
         var currentService = "gitea";
         var controlsCollapsedKey = "foundry-logs-controls-collapsed";
+        var severityFilter = "all";
 
         function pauseCompactIconMarkup(isPaused) {
           if (isPaused) {
@@ -317,6 +340,43 @@
           return line.toLowerCase().indexOf(query.toLowerCase()) >= 0;
         }
 
+        function getLineSeverity(line) {
+          var lower = line.toLowerCase();
+          if (
+            lower.indexOf("error") >= 0 ||
+            lower.indexOf("exception") >= 0 ||
+            lower.indexOf("failed") >= 0 ||
+            lower.indexOf("fatal") >= 0
+          ) {
+            return "error";
+          }
+          if (
+            lower.indexOf("warn") >= 0 ||
+            lower.indexOf("warning") >= 0 ||
+            lower.indexOf("unauthorized") >= 0
+          ) {
+            return "warn";
+          }
+          return "info";
+        }
+
+        function passesSeverityFilter(line) {
+          if (severityFilter === "all") return true;
+          return getLineSeverity(line) === severityFilter;
+        }
+
+        function updateSeverityCounts() {
+          var counts = { all: logLines.length, error: 0, warn: 0, info: 0 };
+          logLines.forEach(function (line) {
+            counts[getLineSeverity(line)] += 1;
+          });
+
+          if (severityCountAll) severityCountAll.textContent = String(counts.all);
+          if (severityCountError) severityCountError.textContent = String(counts.error);
+          if (severityCountWarn) severityCountWarn.textContent = String(counts.warn);
+          if (severityCountInfo) severityCountInfo.textContent = String(counts.info);
+        }
+
         function renderOutput() {
           if (!output) return;
           if (!buildFilterRegex()) {
@@ -326,9 +386,12 @@
 
           var stickBottom = output.scrollTop + output.clientHeight >= output.scrollHeight - 16;
           var onlyMatches = matchesToggle && matchesToggle.checked;
-          var visible = onlyMatches ? logLines.filter(lineMatches) : logLines;
+          var visible = logLines.filter(function (line) {
+            return passesSeverityFilter(line) && (!onlyMatches || lineMatches(line));
+          });
           output.textContent = visible.join("\n");
           if (output.textContent.length) output.textContent += "\n";
+          updateSeverityCounts();
 
           if (currentAutoScroll() && (stickBottom || !paused)) {
             output.scrollTop = output.scrollHeight;
@@ -401,6 +464,18 @@
             logLines = [];
             renderOutput();
             connect();
+          });
+        });
+
+        severityButtons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            var next = button.getAttribute("data-severity-filter");
+            if (!next) return;
+            severityFilter = next;
+            severityButtons.forEach(function (chip) {
+              chip.classList.toggle("is-active", chip.getAttribute("data-severity-filter") === next);
+            });
+            renderOutput();
           });
         });
 
